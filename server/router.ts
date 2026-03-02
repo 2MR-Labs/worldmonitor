@@ -42,6 +42,9 @@ export function createRouter(allRoutes: RouteDescriptor[]): Router {
       });
     } else {
       const key = `${route.method} ${route.path}`;
+      if (staticTable.has(key)) {
+        console.warn(`[router] Duplicate route registered: ${key}`);
+      }
       staticTable.set(key, route.handler);
       if (!staticPaths.has(route.path)) staticPaths.set(route.path, new Set());
       staticPaths.get(route.path)!.add(route.method);
