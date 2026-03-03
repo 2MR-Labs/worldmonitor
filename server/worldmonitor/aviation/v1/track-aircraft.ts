@@ -89,50 +89,55 @@ export async function trackAircraft(
 ): Promise<TrackAircraftResponse> {
     const cacheKey = buildCacheKey(req);
 
-    const result = await cachedFetchJson<{ positions: PositionSample[]; source: string }>(
-        cacheKey, CACHE_TTL, async () => {
-            const relayBase = getRelayBaseUrl();
+    let result: { positions: PositionSample[]; source: string } | null = null;
+    try {
+        result = await cachedFetchJson<{ positions: PositionSample[]; source: string }>(
+            cacheKey, CACHE_TTL, async () => {
+                const relayBase = getRelayBaseUrl();
 
-            // Try relay first if configured
-            if (relayBase) {
-                try {
-                    let osUrl: string;
-                    if (req.swLat && req.neLat) {
-                        osUrl = `${relayBase}/opensky/states/all?lamin=${req.swLat}&lomin=${req.swLon}&lamax=${req.neLat}&lomax=${req.neLon}`;
-                    } else if (req.icao24) {
-                        osUrl = `${relayBase}/opensky/states/all?icao24=${req.icao24}`;
-                    } else {
-                        osUrl = `${relayBase}/opensky/states/all`;
+                // Try relay first if configured
+                if (relayBase) {
+                    try {
+                        let osUrl: string;
+                        if (req.swLat && req.neLat) {
+                            osUrl = `${relayBase}/opensky/states/all?lamin=${req.swLat}&lomin=${req.swLon}&lamax=${req.neLat}&lomax=${req.neLon}`;
+                        } else if (req.icao24) {
+                            osUrl = `${relayBase}/opensky/states/all?icao24=${req.icao24}`;
+                        } else {
+                            osUrl = `${relayBase}/opensky/states/all`;
+                        }
+
+                        const resp = await fetch(osUrl, {
+                            headers: getRelayHeaders({}),
+                            signal: AbortSignal.timeout(10_000),
+                        });
+
+                        if (resp.ok) {
+                            const data = await resp.json() as OpenSkyResponse;
+                            const positions = parseOpenSkyStates(data.states ?? []);
+                            if (positions.length > 0) return { positions, source: 'opensky' };
+                        }
+                    } catch (err) {
+                        console.warn(`[Aviation] Relay failed: ${err instanceof Error ? err.message : err}`);
                     }
+                }
 
-                    const resp = await fetch(osUrl, {
-                        headers: getRelayHeaders({}),
-                        signal: AbortSignal.timeout(10_000),
-                    });
-
-                    if (resp.ok) {
-                        const data = await resp.json() as OpenSkyResponse;
-                        const positions = parseOpenSkyStates(data.states ?? []);
-                        if (positions.length > 0) return { positions, source: 'opensky' };
+                // Try direct OpenSky anonymous API (no auth needed, ~10 req/min limit)
+                try {
+                    const directPositions = await fetchOpenSkyAnonymous(req);
+                    if (directPositions.length > 0) {
+                        return { positions: directPositions, source: 'opensky-anonymous' };
                     }
                 } catch (err) {
-                    console.warn(`[Aviation] Relay failed: ${err instanceof Error ? err.message : err}`);
+                    console.warn(`[Aviation] Direct OpenSky anonymous failed: ${err instanceof Error ? err.message : err}`);
                 }
-            }
 
-            // Try direct OpenSky anonymous API (no auth needed, ~10 req/min limit)
-            try {
-                const directPositions = await fetchOpenSkyAnonymous(req);
-                if (directPositions.length > 0) {
-                    return { positions: directPositions, source: 'opensky-anonymous' };
-                }
-            } catch (err) {
-                console.warn(`[Aviation] Direct OpenSky anonymous failed: ${err instanceof Error ? err.message : err}`);
-            }
-
-            return null; // negative-cached briefly
-        }, CACHE_TTL, // negative TTL same as positive — retry quickly
-    );
+                return null; // negative-cached briefly
+            }, CACHE_TTL, // negative TTL same as positive — retry quickly
+        );
+    } catch {
+        /* Redis unavailable — fall through to simulated */
+    }
 
     if (result) {
         let positions = result.positions;
