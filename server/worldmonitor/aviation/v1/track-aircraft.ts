@@ -12,10 +12,6 @@ const CACHE_TTL_MS = 15_000; // 15 second in-memory cache
 let cachedPositions: PositionSample[] | null = null;
 let cacheTs = 0;
 
-interface OpenSkyState {
-    icao24: string; states?: unknown[][];
-}
-
 interface OpenSkyResponse {
     states?: unknown[][];
 }
