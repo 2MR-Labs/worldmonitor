@@ -2387,6 +2387,11 @@ export class MapPopup {
     `;
   }
 
+  private sanitizeClassToken(value: string | undefined, fallback = 'unknown'): string {
+    const token = String(value || '').trim().replace(/[^A-Za-z0-9_-]/g, '').replace(/^[^A-Za-z_]/, '');
+    return token || fallback;
+  }
+
   private renderNaturalEventPopup(event: NaturalEvent): string {
     const categoryColors: Record<string, string> = {
       severeStorms: 'high',
@@ -2405,10 +2410,11 @@ export class MapPopup {
     };
     const icon = getNaturalEventIcon(event.category);
     const severityClass = categoryColors[event.category] || 'low';
+    const categoryClass = this.sanitizeClassToken(event.category, 'manmade');
     const timeAgo = this.getTimeAgo(event.date);
 
     return `
-      <div class="popup-header nat-event ${event.category}">
+      <div class="popup-header nat-event ${categoryClass}">
         <span class="popup-icon">${icon}</span>
         <span class="popup-title">${escapeHtml(event.categoryTitle.toUpperCase())}</span>
         <span class="popup-badge ${severityClass}">${event.closed ? t('popups.naturalEvent.closed') : t('popups.naturalEvent.active')}</span>
