@@ -568,6 +568,8 @@ export interface MapLayers {
   gpsJamming: boolean;
   // Geopolitical boundary layers
   geopoliticalBoundaries: boolean;
+  // CII choropleth layer
+  ciiChoropleth: boolean;
   // Overlay layers
   dayNight: boolean;
 }
@@ -953,6 +955,11 @@ export type NaturalEventCategory =
   | 'seaLakeIce'
   | 'waterColor'
   | 'manmade';
+
+export const NATURAL_EVENT_CATEGORIES: ReadonlySet<NaturalEventCategory> = new Set<NaturalEventCategory>([
+  'severeStorms', 'wildfires', 'volcanoes', 'earthquakes', 'floods', 'landslides',
+  'drought', 'dustHaze', 'snow', 'tempExtremes', 'seaLakeIce', 'waterColor', 'manmade',
+]);
 
 export interface NaturalEvent {
   id: string;

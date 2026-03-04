@@ -26,7 +26,9 @@ import { getLayersForVariant, resolveLayerLabel, type MapVariant } from '@/confi
 import { resolveTradeRouteSegments, type TradeRouteSegment } from '@/config/trade-routes';
 import { GAMMA_IRRADIATORS } from '@/config/irradiators';
 import { AI_DATA_CENTERS } from '@/config/ai-datacenters';
-import { getCountryBbox } from '@/services/country-geometry';
+import { getCountryBbox, getCountriesGeoJson } from '@/services/country-geometry';
+import { escapeHtml } from '@/utils/sanitize';
+import type { FeatureCollection, Geometry } from 'geojson';
 import type { MapLayers, Hotspot, MilitaryFlight, MilitaryVessel, NaturalEvent, InternetOutage, CyberThreat, SocialUnrestEvent, UcdpGeoEvent, MilitaryBase, GammaIrradiator, Spaceport, EconomicCenter, StrategicWaterway, CriticalMineralProject, AIDataCenter, UnderseaCable, Pipeline, CableAdvisory, RepairShip, AisDisruptionEvent, AisDensityZone, AisDisruptionType } from '@/types';
 import type { Earthquake } from '@/services/earthquakes';
 import type { AirportDelayAlert } from '@/services/aviation';
@@ -279,6 +281,17 @@ interface GlobePath {
   pathType: 'cable' | 'oil' | 'gas' | 'products';
   status: string;
 }
+interface GlobePolygon {
+  coords: number[][][];
+  name: string;
+  _kind: 'boundary' | 'cii' | 'conflict';
+  level?: string;
+  score?: number;
+  boundaryType?: string;
+  intensity?: string;
+  parties?: string[];
+  casualties?: string;
+}
 type GlobeMarker =
   | ConflictMarker | HotspotMarker | FlightMarker | VesselMarker
   | WeatherMarker | NaturalMarker | IranMarker | OutageMarker
@@ -289,10 +302,26 @@ type GlobeMarker =
   | FlightDelayMarker | CableAdvisoryMarker | RepairShipMarker | AisDisruptionMarker
   | NewsLocationMarker | FlashMarker;
 
+interface GlobeControlsLike {
+  autoRotate: boolean;
+  autoRotateSpeed: number;
+  enablePan: boolean;
+  enableZoom: boolean;
+  zoomSpeed: number;
+  minDistance: number;
+  maxDistance: number;
+  enableDamping: boolean;
+}
+
 export class GlobeMap {
   private container: HTMLElement;
   private globe: GlobeInstance | null = null;
   private unsubscribeGlobeQuality: (() => void) | null = null;
+  private controls: GlobeControlsLike | null = null;
+  private renderPaused = false;
+  private pendingFlushWhilePaused = false;
+  private controlsAutoRotateBeforePause: boolean | null = null;
+  private controlsDampingBeforePause: boolean | null = null;
 
   private initialized = false;
   private destroyed = false;
@@ -334,6 +363,8 @@ export class GlobeMap {
   private globePaths: GlobePath[] = [];
   private cableFaultIds = new Set<string>();
   private cableDegradedIds = new Set<string>();
+  private ciiScoresMap: Map<string, { score: number; level: string }> = new Map();
+  private countriesGeoData: FeatureCollection<Geometry> | null = null;
 
   // Current layers state
   private layers: MapLayers;
@@ -429,7 +460,8 @@ export class GlobeMap {
       .pathTransitionDuration(0);
 
     // Orbit controls — match Sentinel's settings
-    const controls = globe.controls();
+    const controls = globe.controls() as GlobeControlsLike;
+    this.controls = controls;
     controls.autoRotate = !desktop;
     controls.autoRotateSpeed = 0.3;
     controls.enablePan = false;
@@ -480,13 +512,15 @@ export class GlobeMap {
 
     // Pause auto-rotate on user interaction; resume after 60 s idle (like Sentinel)
     const pauseAutoRotate = () => {
+      if (this.renderPaused) return;
       controls.autoRotate = false;
       if (this.autoRotateTimer) clearTimeout(this.autoRotateTimer);
     };
     const scheduleResumeAutoRotate = () => {
+      if (this.renderPaused) return;
       if (this.autoRotateTimer) clearTimeout(this.autoRotateTimer);
       this.autoRotateTimer = setTimeout(() => {
-        controls.autoRotate = !desktop;
+        if (!this.renderPaused) controls.autoRotate = !desktop;
       }, 60_000);
     };
 
@@ -530,6 +564,14 @@ export class GlobeMap {
 
     // Flush any data that arrived before init completed
     this.flushMarkers();
+
+    // Load countries GeoJSON for CII choropleth
+    getCountriesGeoJson().then(geojson => {
+      if (geojson && !this.destroyed) {
+        this.countriesGeoData = geojson;
+        if (this.ciiScoresMap.size > 0) this.flushPolygons();
+      }
+    }).catch(err => { if (import.meta.env.DEV) console.warn('[GlobeMap] Failed to load countries GeoJSON', err); });
   }
 
   // ─── Marker element builder ────────────────────────────────────────────────
@@ -656,22 +698,16 @@ export class GlobeMap {
     } else if (d._kind === 'conflictZone') {
       const intColor = d.intensity === 'high' ? '#ff2020' : d.intensity === 'medium' ? '#ff8800' : '#ffcc00';
       el.innerHTML = `
-        <div style="position:relative;width:28px;height:28px;">
+        <div style="position:relative;width:20px;height:20px;">
           <div style="
             position:absolute;inset:0;border-radius:50%;
             background:${intColor}33;
-            border:2px solid ${intColor}99;
-            box-shadow:0 0 10px 4px ${intColor}44;
-          "></div>
-          <div style="
-            position:absolute;inset:-6px;border-radius:50%;
-            background:${intColor}11;
-            border:1px solid ${intColor}44;
-            animation:globe-pulse 2.5s ease-out infinite;
+            border:1.5px solid ${intColor}99;
+            box-shadow:0 0 6px 2px ${intColor}44;
           "></div>
           <div style="
             position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-            font-size:11px;line-height:1;color:${intColor};
+            font-size:9px;line-height:1;color:${intColor};
           ">⚔</div>
         </div>`;
       el.title = d.name;
@@ -1054,6 +1090,10 @@ export class GlobeMap {
 
   private flushMarkers(): void {
     if (!this.globe || !this.initialized || this.destroyed) return;
+    if (this.renderPaused) {
+      this.pendingFlushWhilePaused = true;
+      return;
+    }
     if (this.flushTimer) return;
     this.flushTimer = requestAnimationFrame(() => {
       this.flushTimer = null;
@@ -1162,25 +1202,100 @@ export class GlobeMap {
       .pathLabel((d: GlobePath) => d.name);
   }
 
+  private static readonly CII_GLOBE_COLORS: Record<string, string> = {
+    low:      'rgba(40, 180, 60, 0.35)',
+    normal:   'rgba(220, 200, 50, 0.35)',
+    elevated: 'rgba(240, 140, 30, 0.40)',
+    high:     'rgba(220, 50, 20, 0.45)',
+    critical: 'rgba(140, 10, 0, 0.50)',
+  };
+
   private flushPolygons(): void {
     if (!this.globe || !this.initialized || this.destroyed) return;
-    const polys = this.layers.conflicts
-      ? GEOPOLITICAL_BOUNDARIES.map(b => ({
-          coords: [b.coords],
-          name: b.name,
-          boundaryType: b.boundaryType,
-        }))
-      : [];
+    const polys: GlobePolygon[] = [];
+
+    if (this.layers.geopoliticalBoundaries) {
+      for (const b of GEOPOLITICAL_BOUNDARIES) {
+        polys.push({ coords: [b.coords], name: b.name, _kind: 'boundary', boundaryType: b.boundaryType });
+      }
+    }
+
+    if (this.layers.conflicts) {
+      for (const z of CONFLICT_ZONES) {
+        const ring: number[][] = z.coords.map(c => [c[0], c[1]]);
+        if (ring.length < 3) continue;
+        const first = ring[0]!, last = ring[ring.length - 1]!;
+        if (first[0] !== last[0] || first[1] !== last[1]) ring.push(first.slice());
+        polys.push({
+          coords: [ring],
+          name: z.name,
+          _kind: 'conflict',
+          intensity: z.intensity ?? 'low',
+          parties: z.parties,
+          casualties: z.casualties,
+        });
+      }
+    }
+
+    if (this.layers.ciiChoropleth && this.countriesGeoData) {
+      for (const feat of this.countriesGeoData.features) {
+        const code = feat.properties?.['ISO3166-1-Alpha-2'] as string | undefined;
+        const entry = code ? this.ciiScoresMap.get(code) : undefined;
+        if (!entry || !code) continue;
+        const geom = feat.geometry;
+        const rings = geom.type === 'Polygon' ? [geom.coordinates] : geom.type === 'MultiPolygon' ? geom.coordinates : [];
+        const name = (feat.properties?.name as string) ?? code;
+        for (const ring of rings) {
+          polys.push({ coords: ring, name, _kind: 'cii', level: entry.level, score: entry.score });
+        }
+      }
+    }
+
+    const colors = GlobeMap.CII_GLOBE_COLORS;
+    const conflictCap: Record<string, string> = { high: 'rgba(255,40,40,0.25)', medium: 'rgba(255,120,0,0.20)', low: 'rgba(255,200,0,0.15)' };
+    const conflictSide: Record<string, string> = { high: 'rgba(255,40,40,0.12)', medium: 'rgba(255,120,0,0.08)', low: 'rgba(255,200,0,0.06)' };
+    const conflictStroke: Record<string, string> = { high: '#ff3030', medium: '#ff8800', low: '#ffcc00' };
+    const conflictAlt: Record<string, number> = { high: 0.006, medium: 0.004, low: 0.003 };
     (this.globe as any)
       .polygonsData(polys)
-      .polygonCapColor(() => 'rgba(255, 60, 60, 0.15)')
-      .polygonSideColor(() => 'rgba(255, 60, 60, 0.08)')
-      .polygonStrokeColor(() => '#ff4444')
-      .polygonAltitude(0.005)
-      .polygonLabel((d: { name: string }) => d.name);
+      .polygonCapColor((d: GlobePolygon) => {
+        if (d._kind === 'cii') return colors[d.level!] ?? 'rgba(0,0,0,0)';
+        if (d._kind === 'conflict') return conflictCap[d.intensity!] ?? conflictCap.low;
+        return 'rgba(255,60,60,0.15)';
+      })
+      .polygonSideColor((d: GlobePolygon) => {
+        if (d._kind === 'cii') return 'rgba(0,0,0,0)';
+        if (d._kind === 'conflict') return conflictSide[d.intensity!] ?? conflictSide.low;
+        return 'rgba(255,60,60,0.08)';
+      })
+      .polygonStrokeColor((d: GlobePolygon) => {
+        if (d._kind === 'cii') return 'rgba(80,80,80,0.3)';
+        if (d._kind === 'conflict') return conflictStroke[d.intensity!] ?? conflictStroke.low;
+        return '#ff4444';
+      })
+      .polygonAltitude((d: GlobePolygon) => {
+        if (d._kind === 'cii') return 0.002;
+        if (d._kind === 'conflict') return conflictAlt[d.intensity!] ?? conflictAlt.low;
+        return 0.005;
+      })
+      .polygonLabel((d: GlobePolygon) => {
+        if (d._kind === 'cii') return `<b>${escapeHtml(d.name)}</b><br/>CII: ${d.score}/100 (${escapeHtml(d.level ?? '')})`;
+        if (d._kind === 'conflict') {
+          let label = `<b>${escapeHtml(d.name)}</b>`;
+          if (d.parties?.length) label += `<br/>Parties: ${d.parties.map(p => escapeHtml(p)).join(', ')}`;
+          if (d.casualties) label += `<br/>Casualties: ${escapeHtml(d.casualties)}`;
+          return label;
+        }
+        return escapeHtml(d.name);
+      });
   }
 
   // ─── Public data setters ──────────────────────────────────────────────────
+
+  public setCIIScores(scores: Array<{ code: string; score: number; level: string }>): void {
+    this.ciiScoresMap = new Map(scores.map(s => [s.code, { score: s.score, level: s.level }]));
+    this.flushPolygons();
+  }
 
   public setHotspots(hotspots: Hotspot[]): void {
     this.hotspots = hotspots.map(h => ({
@@ -1464,7 +1579,45 @@ export class GlobeMap {
     if (!isResizing) this.resize();
   }
   public setZoom(_z: number): void {}
-  public setRenderPaused(_paused: boolean): void {}
+  public setRenderPaused(paused: boolean): void {
+    if (this.renderPaused === paused) return;
+    this.renderPaused = paused;
+
+    if (paused) {
+      if (this.flushTimer) {
+        cancelAnimationFrame(this.flushTimer);
+        this.flushTimer = null;
+      }
+      this.pendingFlushWhilePaused = true;
+      if (this.autoRotateTimer) {
+        clearTimeout(this.autoRotateTimer);
+        this.autoRotateTimer = null;
+      }
+    }
+
+    if (this.controls) {
+      if (paused) {
+        this.controlsAutoRotateBeforePause = this.controls.autoRotate;
+        this.controlsDampingBeforePause = this.controls.enableDamping;
+        this.controls.autoRotate = false;
+        this.controls.enableDamping = false;
+      } else {
+        if (this.controlsAutoRotateBeforePause !== null) {
+          this.controls.autoRotate = this.controlsAutoRotateBeforePause;
+        }
+        if (this.controlsDampingBeforePause !== null) {
+          this.controls.enableDamping = this.controlsDampingBeforePause;
+        }
+        this.controlsAutoRotateBeforePause = null;
+        this.controlsDampingBeforePause = null;
+      }
+    }
+
+    if (!paused && this.pendingFlushWhilePaused) {
+      this.pendingFlushWhilePaused = false;
+      this.flushMarkers();
+    }
+  }
   public updateHotspotActivity(_news: any[]): void {}
   public updateMilitaryForEscalation(_f: any[], _v: any[]): void {}
   public getHotspotDynamicScore(_id: string) { return undefined; }
@@ -1755,6 +1908,9 @@ export class GlobeMap {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
     this.hideTooltip();
+    this.controls = null;
+    this.controlsAutoRotateBeforePause = null;
+    this.controlsDampingBeforePause = null;
     this.layerTogglesEl = null;
     if (this.globe) {
       try { this.globe._destructor(); } catch { /* ignore */ }

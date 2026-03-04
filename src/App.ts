@@ -260,7 +260,6 @@ export class App {
       playbackControl: null,
       exportPanel: null,
       unifiedSettings: null,
-      mobileWarningModal: null,
       pizzintIndicator: null,
       countryBriefPage: null,
       countryTimeline: null,
@@ -300,6 +299,10 @@ export class App {
 
     this.panelLayout = new PanelLayoutManager(this.state, {
       openCountryStory: (code, name) => this.countryIntel.openCountryStory(code, name),
+      openCountryBrief: (code) => {
+        const name = CountryIntelManager.resolveCountryName(code);
+        void this.countryIntel.openCountryBriefByCode(code, name);
+      },
       loadAllData: () => this.dataLoader.loadAllData(),
       updateMonitorResults: () => this.dataLoader.updateMonitorResults(),
       loadSecurityAdvisories: () => this.dataLoader.loadSecurityAdvisories(),
@@ -429,7 +432,6 @@ export class App {
 
     // Phase 3: UI setup methods
     this.eventHandlers.startHeaderClock();
-    this.eventHandlers.setupMobileWarning();
     this.eventHandlers.setupPlaybackControl();
     this.eventHandlers.setupStatusPanel();
     this.eventHandlers.setupPizzIntIndicator();
