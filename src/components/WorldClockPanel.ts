@@ -126,7 +126,7 @@ function pad2(n: number): string {
   return n < 10 ? `0${n}` : `${n}`;
 }
 
-const STYLE = `<style>
+const WC_CSS = `
 .wc-container{display:flex;flex-direction:column}
 .wc-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:7px 10px;border-bottom:1px solid var(--border-subtle,#1a1a1a);transition:background .15s;gap:0}
 .wc-row:last-child{border-bottom:none}
@@ -171,7 +171,7 @@ const STYLE = `<style>
 .wc-row.wc-dragging{opacity:.3}
 .wc-row.wc-drag-over-above{box-shadow:inset 0 2px 0 #44ff88}
 .wc-row.wc-drag-over-below{box-shadow:inset 0 -2px 0 #44ff88}
-</style>`;
+`;
 
 export class WorldClockPanel extends Panel {
   private tickInterval: ReturnType<typeof setInterval> | null = null;
@@ -185,6 +185,7 @@ export class WorldClockPanel extends Panel {
 
   constructor() {
     super({ id: 'world-clock', title: 'World Clock', trackActivity: false });
+    this.injectStyles('world-clock-styles', WC_CSS);
     this.homeCityId = detectHomeCity();
     this.selectedCities = loadSelectedCities();
 
@@ -234,7 +235,7 @@ export class WorldClockPanel extends Panel {
   }
 
   private renderSettings(): void {
-    let html = STYLE + '<div class="wc-settings-view">';
+    let html = '<div class="wc-settings-view">';
     for (const region of CITY_REGIONS) {
       html += `<div class="wc-region-header">${region.name}</div><div class="wc-region-grid">`;
       for (const id of region.ids) {
@@ -322,11 +323,11 @@ export class WorldClockPanel extends Panel {
       .filter((c): c is CityEntry => !!c);
 
     if (sorted.length === 0) {
-      this.setContent(STYLE + '<div class="wc-empty">No cities selected. Click \u2699 to add cities.</div>');
+      this.setContent('<div class="wc-empty">No cities selected. Click \u2699 to add cities.</div>');
       return;
     }
 
-    let html = STYLE + '<div class="wc-container">';
+    let html = '<div class="wc-container" translate="no">';
     for (const city of sorted) {
       const { h, m, s, dayOfWeek } = getTimeInZone(city.timezone);
       const isDay = h >= 6 && h < 20;
