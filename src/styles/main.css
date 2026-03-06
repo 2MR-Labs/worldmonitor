@@ -1299,9 +1299,8 @@ canvas,
 
 /* ── Command Console ── */
 .command-console {
-  flex: 0 0 auto;
-  height: 120px;
-  min-height: 80px;
+  flex: 1 0 120px;
+  min-height: 120px;
   display: flex;
   flex-direction: column;
   background: var(--bg-secondary);
@@ -1376,6 +1375,488 @@ canvas,
   font-size: 13px;
   letter-spacing: 0.5px;
   opacity: 0.6;
+}
+
+/* ── COA Report Styles ── */
+
+.command-console-body {
+  overflow-y: auto;
+}
+
+.command-console-coa-btn.loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Loading */
+.coa-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 20px;
+  width: 100%;
+}
+
+.coa-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: coa-spin 0.8s linear infinite;
+}
+
+@keyframes coa-spin {
+  to { transform: rotate(360deg); }
+}
+
+.coa-loading-text {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.coa-loading-sub {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+/* Report container */
+.coa-report {
+  padding: 16px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.coa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.coa-classification {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--semantic-critical);
+  text-transform: uppercase;
+}
+
+.coa-timestamp {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+/* Sections */
+.coa-section {
+  margin-bottom: 16px;
+  padding-left: 10px;
+  border-left: 2px solid var(--border);
+}
+
+.coa-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.coa-section-recommended {
+  border-left-color: var(--accent);
+  background: rgba(212, 168, 70, 0.04);
+  padding: 10px;
+  border-radius: 0 4px 4px 0;
+}
+
+.coa-section-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+/* Threat badges */
+.coa-threat-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+}
+
+.coa-threat-critical { background: var(--semantic-critical); }
+.coa-threat-high { background: var(--semantic-high); }
+.coa-threat-elevated { background: var(--accent); }
+.coa-threat-moderate { background: var(--semantic-info); }
+
+.coa-theater-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.coa-summary {
+  width: 100%;
+  margin: 8px 0 4px;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.coa-findings {
+  width: 100%;
+  margin: 4px 0;
+  padding-left: 18px;
+}
+
+.coa-findings li {
+  margin-bottom: 3px;
+  color: var(--text-secondary);
+}
+
+/* CoG Grid */
+.coa-cog-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.coa-cog-card {
+  padding: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.coa-cog-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.coa-cog-row {
+  font-size: 11px;
+  margin-bottom: 3px;
+  color: var(--text-secondary);
+}
+
+.coa-cog-dim {
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.coa-cog-vulns {
+  margin-top: 6px;
+  font-size: 11px;
+}
+
+.coa-cog-vulns ul {
+  padding-left: 14px;
+  margin: 2px 0 0;
+}
+
+.coa-cog-vulns li {
+  color: var(--semantic-high);
+  margin-bottom: 2px;
+}
+
+/* COA Cards */
+.coa-card {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.coa-card-selected {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(212, 168, 70, 0.15);
+}
+
+.coa-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.coa-card-id {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+
+.coa-card-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.coa-risk-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.coa-risk-high { background: var(--semantic-critical); }
+.coa-risk-medium { background: var(--accent); }
+.coa-risk-low { background: var(--semantic-normal); }
+
+.coa-approach-tag,
+.coa-timeframe-tag {
+  font-size: 9px;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.coa-card-desc {
+  margin: 4px 0;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.coa-pros-cons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.coa-pros-label,
+.coa-cons-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.coa-pros-label { color: var(--semantic-normal); }
+.coa-cons-label { color: var(--semantic-high); }
+
+.coa-pros ul,
+.coa-cons ul {
+  padding-left: 14px;
+  margin: 0;
+}
+
+.coa-pros li { color: var(--text-secondary); margin-bottom: 2px; }
+.coa-cons li { color: var(--text-secondary); margin-bottom: 2px; }
+
+/* Friction bars */
+.coa-friction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coa-friction-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coa-friction-label {
+  width: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.coa-friction-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.coa-friction-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.coa-friction-high { background: var(--semantic-critical); }
+.coa-friction-medium { background: var(--accent); }
+.coa-friction-low { background: var(--semantic-normal); }
+
+.coa-friction-level {
+  font-size: 10px;
+  font-weight: 700;
+  width: 55px;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.coa-friction-factors {
+  font-size: 10px;
+  color: var(--text-dim);
+  padding-left: 110px;
+  margin-bottom: 4px;
+}
+
+.coa-mitigation {
+  margin-top: 10px;
+}
+
+.coa-mitigation-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.coa-mitigation ul {
+  padding-left: 14px;
+  margin: 0;
+}
+
+.coa-mitigation li {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+/* Recommended Action */
+.coa-rec-selected {
+  font-size: 12px;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.coa-rec-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.coa-rec-actions ol,
+.coa-rec-decisions ul {
+  padding-left: 18px;
+  margin: 0 0 8px;
+}
+
+.coa-rec-actions li,
+.coa-rec-decisions li {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 3px;
+}
+
+/* Risk indicators */
+.coa-risk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.coa-risk-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.coa-risk-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.coa-risk-dot.coa-risk-high { background: var(--semantic-critical); }
+.coa-risk-dot.coa-risk-medium { background: var(--accent); }
+.coa-risk-dot.coa-risk-low { background: var(--semantic-normal); }
+
+.coa-risk-level {
+  font-size: 10px;
+  font-weight: 700;
+  width: 55px;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+}
+
+.coa-risk-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.coa-risk-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* Raw text fallback */
+.coa-raw-text {
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Error state */
+.coa-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: var(--semantic-critical);
+}
+
+.coa-error-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.coa-error-msg {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
 }
 
 .map-dimension-toggle {

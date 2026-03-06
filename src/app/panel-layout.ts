@@ -35,6 +35,7 @@ import {
   AviationCommandBar,
 } from '@/components';
 import { SatelliteFiresPanel } from '@/components/SatelliteFiresPanel';
+import { CommandConsole } from '@/components/CommandConsole';
 import { focusInvestmentOnMap } from '@/services/investments-focus';
 import { debounce, saveToStorage, loadFromStorage } from '@/utils';
 import { escapeHtml } from '@/utils/sanitize';
@@ -64,6 +65,7 @@ export class PanelLayoutManager implements AppModule {
   private panelDragCleanupHandlers: Array<() => void> = [];
   private criticalBannerEl: HTMLElement | null = null;
   private aviationCommandBar: AviationCommandBar | null = null;
+  private commandConsole: CommandConsole | null = null;
   private readonly applyTimeRangeFilterDebounced: (() => void) & { cancel(): void };
 
   constructor(ctx: AppContext, callbacks: PanelLayoutCallbacks) {
@@ -101,6 +103,10 @@ export class PanelLayoutManager implements AppModule {
     this.aviationCommandBar?.destroy();
     this.aviationCommandBar = null;
     this.ctx.panels['airline-intel']?.destroy();
+
+    // Clean up Command Console
+    this.commandConsole?.destroy();
+    this.commandConsole = null;
 
     window.removeEventListener('resize', this.ensureCorrectZones);
   }
@@ -275,6 +281,9 @@ export class PanelLayoutManager implements AppModule {
 
     this.createPanels();
     this.setupRightSidebar();
+
+    // Initialize Command Console (COA generation)
+    this.commandConsole = new CommandConsole(this.ctx);
 
     if (this.ctx.isMobile) {
       this.setupMobileMapToggle();
