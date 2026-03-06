@@ -35,6 +35,7 @@ import {
   AviationCommandBar,
 } from '@/components';
 import { SatelliteFiresPanel } from '@/components/SatelliteFiresPanel';
+import { CommandConsole } from '@/components/CommandConsole';
 import { focusInvestmentOnMap } from '@/services/investments-focus';
 import { debounce, saveToStorage, loadFromStorage } from '@/utils';
 import { escapeHtml } from '@/utils/sanitize';
@@ -64,6 +65,7 @@ export class PanelLayoutManager implements AppModule {
   private panelDragCleanupHandlers: Array<() => void> = [];
   private criticalBannerEl: HTMLElement | null = null;
   private aviationCommandBar: AviationCommandBar | null = null;
+  private commandConsole: CommandConsole | null = null;
   private readonly applyTimeRangeFilterDebounced: (() => void) & { cancel(): void };
 
   constructor(ctx: AppContext, callbacks: PanelLayoutCallbacks) {
@@ -101,6 +103,10 @@ export class PanelLayoutManager implements AppModule {
     this.aviationCommandBar?.destroy();
     this.aviationCommandBar = null;
     this.ctx.panels['airline-intel']?.destroy();
+
+    // Clean up Command Console
+    this.commandConsole?.destroy();
+    this.commandConsole = null;
 
     window.removeEventListener('resize', this.ensureCorrectZones);
   }
@@ -257,7 +263,7 @@ export class PanelLayoutManager implements AppModule {
           <div class="right-sidebar-header">
             <div class="right-sidebar-tabs">
               <button class="right-tab right-tab--active" data-tab="chat">CHAT</button>
-              <button class="right-tab" data-tab="intel">情报</button>
+              <button class="right-tab" data-tab="intel">${t('components.insights.sectionIntelligence')}</button>
             </div>
             <button class="right-sidebar-toggle" id="rightSidebarToggle" title="Toggle sidebar">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -275,6 +281,9 @@ export class PanelLayoutManager implements AppModule {
 
     this.createPanels();
     this.setupRightSidebar();
+
+    // Initialize Command Console (COA generation)
+    this.commandConsole = new CommandConsole(this.ctx);
 
     if (this.ctx.isMobile) {
       this.setupMobileMapToggle();
