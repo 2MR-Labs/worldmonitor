@@ -257,7 +257,7 @@ export class PanelLayoutManager implements AppModule {
           <div class="right-sidebar-header">
             <div class="right-sidebar-tabs">
               <button class="right-tab right-tab--active" data-tab="chat">CHAT</button>
-              <button class="right-tab" data-tab="intel">情报</button>
+              <button class="right-tab" data-tab="intel">${t('settings.sectionIntelligence')}</button>
             </div>
             <button class="right-sidebar-toggle" id="rightSidebarToggle" title="Toggle sidebar">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
