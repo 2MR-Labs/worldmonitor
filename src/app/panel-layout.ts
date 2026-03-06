@@ -242,7 +242,6 @@ export class PanelLayoutManager implements AppModule {
             <div class="command-console-header">
               <div class="command-console-header-left">
                 <span class="command-console-title">COMMAND CONSOLE</span>
-                <span class="command-console-subtitle">Target: INT-004 // NON-KINETIC</span>
               </div>
               <button class="command-console-coa-btn" id="commandCoaBtn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
