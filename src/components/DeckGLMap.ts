@@ -2808,7 +2808,7 @@ export class DeckGLMap {
   };
 
   private static readonly CII_LEVEL_HEX: Record<string, string> = {
-    critical: '#b91c1c', high: '#dc2626', elevated: '#f59e0b', normal: '#eab308', low: '#22c55e',
+    critical: '#b91c1c', high: '#dc2626', elevated: '#D4A846', normal: '#eab308', low: '#2ea043',
   };
 
   private createCIIChoroplethLayer(): GeoJsonLayer | null {
@@ -3428,11 +3428,6 @@ export class DeckGLMap {
         `).join('')}
       </div>
     `;
-
-    const authorBadge = document.createElement('div');
-    authorBadge.className = 'map-author-badge';
-    authorBadge.textContent = '© Elie Habib · Someone™';
-    toggles.appendChild(authorBadge);
 
     this.container.appendChild(toggles);
 
@@ -4728,7 +4723,7 @@ export class DeckGLMap {
           type: 'fill',
           source: 'country-boundaries',
           paint: {
-            'fill-color': '#3b82f6',
+            'fill-color': '#D4A846',
             'fill-opacity': 0,
           },
         });
@@ -4737,7 +4732,7 @@ export class DeckGLMap {
           type: 'fill',
           source: 'country-boundaries',
           paint: {
-            'fill-color': '#3b82f6',
+            'fill-color': '#D4A846',
             'fill-opacity': 0.06,
           },
           filter: ['==', ['get', 'name'], ''],
@@ -4747,7 +4742,7 @@ export class DeckGLMap {
           type: 'fill',
           source: 'country-boundaries',
           paint: {
-            'fill-color': '#3b82f6',
+            'fill-color': '#D4A846',
             'fill-opacity': 0.12,
           },
           filter: ['==', ['get', 'ISO3166-1-Alpha-2'], ''],
@@ -4757,7 +4752,7 @@ export class DeckGLMap {
           type: 'line',
           source: 'country-boundaries',
           paint: {
-            'line-color': '#3b82f6',
+            'line-color': '#D4A846',
             'line-width': 1.5,
             'line-opacity': 0.5,
           },

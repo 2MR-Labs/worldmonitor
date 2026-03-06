@@ -30,10 +30,10 @@ function humanizeSignalType(type: string): string {
 }
 
 const LEVEL_COLORS: Record<string, string> = {
-  critical: '#ef4444', high: '#f97316', elevated: '#eab308', normal: '#22c55e', low: '#3b82f6',
+  critical: '#ef4444', high: '#f97316', elevated: '#D4A846', normal: '#2ea043', low: '#3b82f6',
 };
 const THREAT_COLORS: Record<string, string> = {
-  critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#22c55e', info: '#3b82f6',
+  critical: '#ef4444', high: '#f97316', medium: '#D4A846', low: '#2ea043', info: '#3b82f6',
 };
 
 const LOGO_URL = '/favico/worldmonitor-icon-1024.png';

@@ -57,7 +57,7 @@
   --map-stroke: #C8C0B5;
 
   /* Typography — Nunito rounded sans-serif */
-  --font-body: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', 'Nunito', system-ui, -apple-system, sans-serif;
 
   /* Panel border radius — soft rounded corners */
   --panel-radius: 14px;
@@ -147,7 +147,7 @@
   --map-stroke: #3D5045;
 
   /* Typography inherits from light variant selector */
-  --font-body: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', 'Nunito', system-ui, -apple-system, sans-serif;
 
   /* Panel border radius */
   --panel-radius: 14px;

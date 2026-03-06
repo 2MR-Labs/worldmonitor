@@ -11,7 +11,6 @@ import type { Earthquake } from '@/services/earthquakes';
 import type { CountryBriefPanel } from '@/components/CountryBriefPanel';
 import type { CountryTimeline } from '@/components/CountryTimeline';
 import type { PlaybackControl } from '@/components';
-import type { ExportPanel } from '@/utils';
 import type { UnifiedSettings } from '@/components/UnifiedSettings';
 import type { PizzIntIndicator } from '@/components';
 import type { ParsedMapUrlState } from '@/utils';
@@ -101,7 +100,6 @@ export interface AppContext {
   findingsBadge: IntelligenceGapBadge | null;
   breakingBanner: BreakingNewsBanner | null;
   playbackControl: PlaybackControl | null;
-  exportPanel: ExportPanel | null;
   unifiedSettings: UnifiedSettings | null;
   pizzintIndicator: PizzIntIndicator | null;
   countryBriefPage: CountryBriefPanel | null;

@@ -21,7 +21,7 @@ import { Panel } from './Panel';
 // ---- Helpers ----
 
 const SEVERITY_COLOR: Record<FlightDelaySeverity, string> = {
-    normal: 'var(--color-success, #22c55e)',
+    normal: 'var(--color-success, #2ea043)',
     minor: '#f59e0b',
     moderate: '#f97316',
     major: '#ef4444',
@@ -29,8 +29,8 @@ const SEVERITY_COLOR: Record<FlightDelaySeverity, string> = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-    scheduled: '#6b7280', boarding: '#3b82f6', departed: '#8b5cf6',
-    airborne: '#22c55e', landed: '#14b8a6', arrived: '#0ea5e9',
+    scheduled: '#6b7280', boarding: '#D4A846', departed: '#8b5cf6',
+    airborne: '#2ea043', landed: '#14b8a6', arrived: '#0ea5e9',
     cancelled: '#ef4444', diverted: '#f59e0b', unknown: '#6b7280',
 };
 
@@ -100,7 +100,7 @@ export class AirlineIntelPanel extends Panel {
         this.liveIndicator = document.createElement('span');
         this.liveIndicator.className = 'live-badge';
         this.liveIndicator.textContent = '\u25CF LIVE';
-        this.liveIndicator.style.cssText = 'display:none;color:#22c55e;font-size:10px;font-weight:700;margin-left:8px;letter-spacing:0.5px;';
+        this.liveIndicator.style.cssText = 'display:none;color:#2ea043;font-size:10px;font-weight:700;margin-left:8px;letter-spacing:0.5px;';
         this.header.querySelector('.panel-title')?.appendChild(this.liveIndicator);
 
         // Insert tab bar between header and content

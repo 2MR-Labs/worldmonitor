@@ -15,7 +15,6 @@ import {
   buildMapUrl,
   debounce,
   saveToStorage,
-  ExportPanel,
   getCurrentTheme,
   setTheme,
 } from '@/utils';
@@ -735,20 +734,6 @@ export class EventHandlerManager implements AppModule {
     }
   }
 
-  setupExportPanel(): void {
-    this.ctx.exportPanel = new ExportPanel(() => ({
-      news: this.ctx.latestClusters.length > 0 ? this.ctx.latestClusters : this.ctx.allNews,
-      markets: this.ctx.latestMarkets,
-      predictions: this.ctx.latestPredictions,
-      timestamp: Date.now(),
-    }));
-
-    const headerRight = this.ctx.container.querySelector('.header-right');
-    if (headerRight) {
-      headerRight.insertBefore(this.ctx.exportPanel.getElement(), headerRight.firstChild);
-    }
-  }
-
   setupUnifiedSettings(): void {
     this.ctx.unifiedSettings = new UnifiedSettings({
       getPanelSettings: () => this.ctx.panelSettings,
@@ -968,20 +953,11 @@ export class EventHandlerManager implements AppModule {
     const resizeHandle = document.getElementById('mapResizeHandle');
     if (!mapSection || !resizeHandle || !mapContainer) return;
 
-    const getMinHeight = () => (window.innerWidth >= 1600 ? 280 : 350);
+    const getMinHeight = () => 150;
     const getMaxHeight = () => {
-      if (window.innerWidth < 1600) return Math.max(getMinHeight(), window.innerHeight - 150);
-
-      const bottomGrid = document.getElementById('mapBottomGrid');
-      const isEmpty = !bottomGrid || bottomGrid.children.length === 0;
-      const headerHeight = 60;
-      const totalAvailable = window.innerHeight - headerHeight;
-
-      if (isEmpty) {
-        return totalAvailable - 25;
-      } else {
-        return totalAvailable - 300;
-      }
+      const sectionHeight = mapSection.offsetHeight;
+      // Leave at least 120px for command console + resize handle
+      return sectionHeight - 160;
     };
 
     const savedHeight = localStorage.getItem('map-height');
@@ -989,12 +965,8 @@ export class EventHandlerManager implements AppModule {
       const numeric = Number.parseInt(savedHeight, 10);
       if (Number.isFinite(numeric)) {
         const clamped = Math.max(getMinHeight(), Math.min(numeric, getMaxHeight()));
-        if (window.innerWidth >= 1600) {
-          mapContainer.style.flex = 'none';
-          mapContainer.style.height = `${clamped}px`;
-        } else {
-          mapSection.style.height = `${clamped}px`;
-        }
+        mapContainer.style.flex = 'none';
+        mapContainer.style.height = `${clamped}px`;
         if (clamped !== numeric) {
           localStorage.setItem('map-height', `${clamped}px`);
         }
@@ -1007,7 +979,7 @@ export class EventHandlerManager implements AppModule {
     let startY = 0;
     let startHeight = 0;
 
-    const getTarget = () => (window.innerWidth >= 1600 ? mapContainer : mapSection);
+    const getTarget = () => mapContainer;
 
     this.boundMapEndResizeHandler = () => {
       if (!isResizing) return;
@@ -1032,16 +1004,15 @@ export class EventHandlerManager implements AppModule {
     });
 
     resizeHandle.addEventListener('dblclick', () => {
-      const isWide = window.innerWidth >= 1600;
-      const target = isWide ? mapContainer : mapSection;
-
-      const targetHeight = window.innerHeight * 0.5;
+      const target = mapContainer;
+      const sectionHeight = mapSection.offsetHeight;
+      const targetHeight = Math.round(sectionHeight * 0.6);
       const finalHeight = Math.max(getMinHeight(), Math.min(targetHeight, getMaxHeight()));
 
       this.ctx.map?.setIsResizing(true);
       target.classList.add('map-section-smooth');
 
-      if (isWide) target.style.flex = 'none';
+      target.style.flex = 'none';
       target.style.height = `${finalHeight}px`;
 
       let fired = false;
@@ -1063,13 +1034,12 @@ export class EventHandlerManager implements AppModule {
 
     this.boundMapResizeMoveHandler = (e: MouseEvent) => {
       if (!isResizing) return;
-      const isWide = window.innerWidth >= 1600;
-      const target = isWide ? mapContainer : mapSection;
+      const target = mapContainer;
 
       const deltaY = e.clientY - startY;
       const newHeight = Math.max(getMinHeight(), Math.min(startHeight + deltaY, getMaxHeight()));
 
-      if (isWide) target.style.flex = 'none';
+      target.style.flex = 'none';
       target.style.height = `${newHeight}px`;
 
       this.ctx.map?.resize();
