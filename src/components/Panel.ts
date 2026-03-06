@@ -74,7 +74,7 @@ function getColSpan(element: HTMLElement): number {
 }
 
 function getGridColumnCount(element: HTMLElement): number {
-  const grid = (element.closest('.panels-grid') || element.closest('.map-bottom-grid')) as HTMLElement | null;
+  const grid = element.closest('.panels-grid') as HTMLElement | null;
   if (!grid) return 3;
   const style = window.getComputedStyle(grid);
   const template = style.gridTemplateColumns;
@@ -194,18 +194,45 @@ export class Panel {
   private readonly contentDebounceMs = 150;
   private pendingContentHtml: string | null = null;
   private contentDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private chevronEl: HTMLElement | null = null;
 
   constructor(options: PanelOptions) {
     this.panelId = options.id;
     this.element = document.createElement('div');
-    this.element.className = `panel ${options.className || ''}`;
+    this.element.className = `panel panel--collapsed ${options.className || ''}`;
     this.element.dataset.panel = options.id;
 
     this.header = document.createElement('div');
     this.header.className = 'panel-header';
+    this.header.style.cursor = 'pointer';
+
+    // Click header to toggle collapse (accordion: only one open at a time)
+    this.header.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('.panel-info-btn, .panel-info-tooltip')) return;
+      const isCurrentlyOpen = !this.element.classList.contains('panel--collapsed');
+
+      // Collapse ALL panels in the same container
+      this.element.parentElement?.querySelectorAll('.panel').forEach(p => {
+        p.classList.add('panel--collapsed');
+        const chev = p.querySelector('.panel-chevron');
+        if (chev) chev.textContent = '▸';
+      });
+
+      // If it was collapsed, expand it (if it was open, it stays collapsed = toggled off)
+      if (!isCurrentlyOpen) {
+        this.element.classList.remove('panel--collapsed');
+        if (this.chevronEl) this.chevronEl.textContent = '▾';
+      }
+    });
 
     const headerLeft = document.createElement('div');
     headerLeft.className = 'panel-header-left';
+
+    // Collapse chevron
+    this.chevronEl = document.createElement('span');
+    this.chevronEl.className = 'panel-chevron';
+    this.chevronEl.textContent = '▸';
+    headerLeft.appendChild(this.chevronEl);
 
     const title = document.createElement('span');
     title.className = 'panel-title';

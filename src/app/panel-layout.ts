@@ -112,62 +112,10 @@ export class PanelLayoutManager implements AppModule {
           <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
-          <div class="variant-switcher">${(() => {
-        const local = this.ctx.isDesktopApp || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-        const vHref = (v: string, prod: string) => local || SITE_VARIANT === v ? '#' : prod;
-        const vTarget = (_v: string) => '';
-        return `
-            <a href="${vHref('full', 'https://worldmonitor.app')}"
-               class="variant-option ${SITE_VARIANT === 'full' ? 'active' : ''}"
-               data-variant="full"
-               ${vTarget('full')}
-               title="${t('header.world')}${SITE_VARIANT === 'full' ? ` ${t('common.currentVariant')}` : ''}">
-              <span class="variant-icon">🌍</span>
-              <span class="variant-label">${t('header.world')}</span>
-            </a>
-            <span class="variant-divider"></span>
-            <a href="${vHref('tech', 'https://tech.worldmonitor.app')}"
-               class="variant-option ${SITE_VARIANT === 'tech' ? 'active' : ''}"
-               data-variant="tech"
-               ${vTarget('tech')}
-               title="${t('header.tech')}${SITE_VARIANT === 'tech' ? ` ${t('common.currentVariant')}` : ''}">
-              <span class="variant-icon">💻</span>
-              <span class="variant-label">${t('header.tech')}</span>
-            </a>
-            <span class="variant-divider"></span>
-            <a href="${vHref('finance', 'https://finance.worldmonitor.app')}"
-               class="variant-option ${SITE_VARIANT === 'finance' ? 'active' : ''}"
-               data-variant="finance"
-               ${vTarget('finance')}
-               title="${t('header.finance')}${SITE_VARIANT === 'finance' ? ` ${t('common.currentVariant')}` : ''}">
-              <span class="variant-icon">📈</span>
-              <span class="variant-label">${t('header.finance')}</span>
-            </a>
-            ${SITE_VARIANT === 'happy' ? `<span class="variant-divider"></span>
-            <a href="${vHref('happy', 'https://happy.worldmonitor.app')}"
-               class="variant-option active"
-               data-variant="happy"
-               ${vTarget('happy')}
-               title="Good News ${t('common.currentVariant')}">
-              <span class="variant-icon">☀️</span>
-              <span class="variant-label">Good News</span>
-            </a>` : ''}`;
-      })()}</div>
-          <span class="logo">MONITOR</span><span class="logo-mobile">World Monitor</span><span class="version">v${__APP_VERSION__}</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
-          <a href="https://x.com/eliehabib" target="_blank" rel="noopener" class="credit-link">
-            <svg class="x-logo" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-            <span class="credit-text">@eliehabib</span>
-          </a>
-          <a href="https://github.com/koala73/worldmonitor" target="_blank" rel="noopener" class="github-link" title="${t('header.viewOnGitHub')}">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          </a>
+          <span class="logo">AEGIS COMMAND SYSTEM</span><span class="logo-mobile">AEGIS</span>${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
           <button class="mobile-settings-btn" id="mobileSettingsBtn" title="${t('header.settings')}">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
-          <div class="status-indicator">
-            <span class="status-dot"></span>
-            <span>${t('header.live')}</span>
-          </div>
           <div class="region-selector">
             <select id="regionSelect" class="region-select">
               <option value="global">${t('components.deckgl.views.global')}</option>
@@ -185,20 +133,7 @@ export class PanelLayoutManager implements AppModule {
           </button>
         </div>
         <div class="header-right">
-          ${this.ctx.isDesktopApp ? '' : `<div class="download-wrapper" id="downloadWrapper">
-            <button class="download-btn" id="downloadBtn" title="${t('header.downloadApp')}">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              <span id="downloadBtnLabel">${t('header.downloadApp')}</span>
-            </button>
-            <div class="download-dropdown" id="downloadDropdown"></div>
-          </div>`}
           <button class="search-btn" id="searchBtn"><kbd>⌘K</kbd> ${t('header.search')}</button>
-          ${this.ctx.isDesktopApp ? '' : `<button class="copy-link-btn" id="copyLinkBtn">${t('header.copyLink')}</button>`}
-          <button class="theme-toggle-btn" id="headerThemeToggle" title="${t('header.toggleTheme')}">
-            ${getCurrentTheme() === 'dark'
-        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>'
-        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>'}
-          </button>
           ${this.ctx.isDesktopApp ? '' : `<button class="fullscreen-btn" id="fullscreenBtn" title="${t('header.fullscreen')}">⛶</button>`}
           ${SITE_VARIANT === 'happy' ? `<button class="tv-mode-btn" id="tvModeBtn" title="TV Mode (Shift+T)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></button>` : ''}
           <span id="unifiedSettingsMount"></span>
@@ -207,7 +142,7 @@ export class PanelLayoutManager implements AppModule {
       <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
       <nav class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-header">
-          <span class="mobile-menu-title">WORLD MONITOR</span>
+          <span class="mobile-menu-title">AEGIS COMMAND</span>
           <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
@@ -271,6 +206,8 @@ export class PanelLayoutManager implements AppModule {
       ).join('')}
       </div>
       <div class="main-content">
+        <aside class="live-feed-sidebar" id="liveFeedSidebar"></aside>
+        <div class="main-content-inner">
         <div class="map-section" id="mapSection">
           <div class="panel-header">
             <div class="panel-header-left">
@@ -295,18 +232,101 @@ export class PanelLayoutManager implements AppModule {
           <div class="map-container" id="mapContainer"></div>
           ${SITE_VARIANT === 'happy' ? '<button class="tv-exit-btn" id="tvExitBtn">Exit TV Mode</button>' : ''}
           <div class="map-resize-handle" id="mapResizeHandle"></div>
-          <div class="map-bottom-grid" id="mapBottomGrid"></div>
+          <div class="command-console" id="commandConsole">
+            <div class="command-console-header">
+              <div class="command-console-header-left">
+                <span class="command-console-title">COMMAND CONSOLE</span>
+                <span class="command-console-subtitle">Target: INT-004 // NON-KINETIC</span>
+              </div>
+              <button class="command-console-coa-btn" id="commandCoaBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                GENERATE COA
+              </button>
+            </div>
+            <div class="command-console-body">
+              <div class="command-console-placeholder">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                <span>Awaiting Command Input</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="panels-grid" id="panelsGrid"></div>
         <button class="search-mobile-fab" id="searchMobileFab" aria-label="Search">\u{1F50D}</button>
+        </div>
+        <aside class="right-sidebar" id="rightSidebar">
+          <div class="right-sidebar-header">
+            <div class="right-sidebar-tabs">
+              <button class="right-tab right-tab--active" data-tab="chat">CHAT</button>
+              <button class="right-tab" data-tab="intel">情报</button>
+            </div>
+            <button class="right-sidebar-toggle" id="rightSidebarToggle" title="Toggle sidebar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+          </div>
+          <div class="right-tab-content right-tab-content--active" id="chatContent"></div>
+          <div class="right-tab-content" id="intelContent">
+            <div class="panels-grid" id="panelsGrid"></div>
+          </div>
+        </aside>
       </div>
     `;
 
     this.createPanels();
+    this.setupRightSidebar();
 
     if (this.ctx.isMobile) {
       this.setupMobileMapToggle();
     }
+  }
+
+  private setupRightSidebar(): void {
+    const sidebar = document.getElementById('rightSidebar');
+    const toggle = document.getElementById('rightSidebarToggle');
+    if (!sidebar || !toggle) return;
+
+    // Restore collapsed state
+    const collapsed = loadFromStorage<boolean>('worldmonitor-right-collapsed', false);
+    if (collapsed) sidebar.classList.add('collapsed');
+
+    // Restore active tab
+    const savedTab = loadFromStorage<string>('worldmonitor-right-tab', 'chat');
+    if (savedTab !== 'chat') {
+      this.switchRightTab(sidebar, savedTab);
+    }
+
+    // Collapse toggle
+    toggle.addEventListener('click', () => {
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      saveToStorage('worldmonitor-right-collapsed', isCollapsed);
+
+      const svg = toggle.querySelector('svg polyline');
+      if (svg) svg.setAttribute('points', isCollapsed ? '15 18 9 12 15 6' : '9 18 15 12 9 6');
+    });
+
+    // Tab switching
+    sidebar.querySelector('.right-sidebar-tabs')?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.right-tab');
+      if (!btn || btn.classList.contains('right-tab--active')) return;
+      const tab = btn.dataset['tab'];
+      if (tab) {
+        this.switchRightTab(sidebar, tab);
+        saveToStorage('worldmonitor-right-tab', tab);
+      }
+    });
+  }
+
+  private switchRightTab(sidebar: HTMLElement, tab: string): void {
+    sidebar.querySelectorAll('.right-tab').forEach(btn => {
+      btn.classList.toggle('right-tab--active', (btn as HTMLElement).dataset['tab'] === tab);
+    });
+    sidebar.querySelectorAll('.right-tab-content').forEach(content => {
+      const id = content.id;
+      const isActive = (tab === 'intel' && id === 'intelContent') ||
+                       (tab === 'chat' && id === 'chatContent');
+      content.classList.toggle('right-tab-content--active', isActive);
+    });
   }
 
   private setupMobileMapToggle(): void {
@@ -841,15 +861,10 @@ export class PanelLayoutManager implements AppModule {
 
     const defaultOrder = Object.keys(DEFAULT_PANELS).filter(k => k !== 'map');
     const savedOrder = this.getSavedPanelOrder();
-    const savedBottomOrder = this.getSavedBottomPanelOrder();
-    const isUltraWide = window.innerWidth >= 1600;
-
     let panelOrder = defaultOrder;
-    if (savedOrder.length > 0 || savedBottomOrder.length > 0) {
-      const allSaved = [...savedOrder, ...savedBottomOrder];
-      const missing = defaultOrder.filter(k => !allSaved.includes(k));
+    if (savedOrder.length > 0) {
+      const missing = defaultOrder.filter(k => !savedOrder.includes(k));
       const valid = savedOrder.filter(k => defaultOrder.includes(k));
-      const validBottom = isUltraWide ? savedBottomOrder.filter(k => defaultOrder.includes(k)) : [];
 
       const monitorsIdx = valid.indexOf('monitors');
       if (monitorsIdx !== -1) valid.splice(monitorsIdx, 1);
@@ -860,16 +875,6 @@ export class PanelLayoutManager implements AppModule {
         valid.push('monitors');
       }
       panelOrder = valid;
-
-      // Handle bottom panels
-      validBottom.forEach(key => {
-        const panel = this.ctx.panels[key];
-        if (panel) {
-          const el = panel.getElement();
-          this.makeDraggable(el, key);
-          document.getElementById('mapBottomGrid')?.appendChild(el);
-        }
-      });
     }
 
     if (SITE_VARIANT !== 'happy') {
@@ -997,90 +1002,17 @@ export class PanelLayoutManager implements AppModule {
 
   savePanelOrder(): void {
     const grid = document.getElementById('panelsGrid');
-    const bottomGrid = document.getElementById('mapBottomGrid');
-    if (!grid || !bottomGrid) return;
+    if (!grid) return;
 
     const order = Array.from(grid.children)
       .map((el) => (el as HTMLElement).dataset.panel)
       .filter((key): key is string => !!key);
 
-    const bottomOrder = Array.from(bottomGrid.children)
-      .map((el) => (el as HTMLElement).dataset.panel)
-      .filter((key): key is string => !!key);
-
     localStorage.setItem(this.ctx.PANEL_ORDER_KEY, JSON.stringify(order));
-    localStorage.setItem(this.ctx.PANEL_ORDER_KEY + '-bottom', JSON.stringify(bottomOrder));
   }
-
-  private getSavedBottomPanelOrder(): string[] {
-    try {
-      const saved = localStorage.getItem(this.ctx.PANEL_ORDER_KEY + '-bottom');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  private wasUltraWide = window.innerWidth >= 1600;
 
   public ensureCorrectZones(): void {
-    const isUltraWide = window.innerWidth >= 1600;
-    const mapSection = document.getElementById('mapSection');
-    const mapEnabled = !mapSection?.classList.contains('hidden');
-    const effectiveUltraWide = isUltraWide && mapEnabled;
-
-    if (effectiveUltraWide === this.wasUltraWide) return;
-    this.wasUltraWide = effectiveUltraWide;
-
-    const grid = document.getElementById('panelsGrid');
-    const bottomGrid = document.getElementById('mapBottomGrid');
-    if (!grid || !bottomGrid) return;
-
-    if (!effectiveUltraWide) {
-      // Move everything from bottom grid back to panels grid in correct order
-      const panelsInBottom = Array.from(bottomGrid.querySelectorAll('.panel')) as HTMLElement[];
-      const savedOrder = this.getSavedPanelOrder();
-      const defaultOrder = Object.keys(DEFAULT_PANELS).filter(k => k !== 'map');
-
-      panelsInBottom.forEach(panelEl => {
-        const id = panelEl.dataset.panel;
-        if (!id) return;
-
-        // Use saved sidebar order if present, otherwise default order
-        const searchOrder = savedOrder.includes(id) ? savedOrder : defaultOrder;
-        const pos = searchOrder.indexOf(id);
-
-        if (pos === -1) {
-          grid.appendChild(panelEl);
-          return;
-        }
-
-        // Find the first panel in searchOrder AFTER this one that is currently in the sidebar grid
-        let inserted = false;
-        for (let i = pos + 1; i < searchOrder.length; i++) {
-          const nextId = searchOrder[i];
-          const nextEl = grid.querySelector(`[data-panel="${nextId}"]`);
-          if (nextEl) {
-            grid.insertBefore(panelEl, nextEl);
-            inserted = true;
-            break;
-          }
-        }
-
-        if (!inserted) {
-          grid.appendChild(panelEl);
-        }
-      });
-    } else {
-      // Move panels that belong to bottom zone from sidebar to bottom grid
-      const savedBottomOrder = this.getSavedBottomPanelOrder();
-      savedBottomOrder.forEach(id => {
-        const el = grid.querySelector(`[data-panel="${id}"]`);
-        if (el) {
-          bottomGrid.appendChild(el);
-        }
-      });
-    }
+    // No-op: bottom grid was replaced by command console
   }
 
   private attachRelatedAssetHandlers(panel: NewsPanel): void {
@@ -1222,8 +1154,7 @@ export class PanelLayoutManager implements AppModule {
 
   private handlePanelDragMove(dragging: HTMLElement, clientX: number, clientY: number): void {
     const grid = document.getElementById('panelsGrid');
-    const bottomGrid = document.getElementById('mapBottomGrid');
-    if (!grid || !bottomGrid) return;
+    if (!grid) return;
 
     dragging.style.pointerEvents = 'none';
     const target = document.elementFromPoint(clientX, clientY);
@@ -1231,14 +1162,14 @@ export class PanelLayoutManager implements AppModule {
 
     if (!target) return;
 
-    // Check if we are over a grid or a panel inside a grid
-    const targetGrid = (target.closest('.panels-grid') || target.closest('.map-bottom-grid')) as HTMLElement | null;
+    // Check if we are over the panels grid or a panel inside it
+    const targetGrid = target.closest('.panels-grid') as HTMLElement | null;
     const targetPanel = target.closest('.panel') as HTMLElement | null;
 
     if (!targetGrid && !targetPanel) return;
 
     const currentTargetGrid = targetGrid || (targetPanel ? targetPanel.parentElement as HTMLElement : null);
-    if (!currentTargetGrid || (currentTargetGrid !== grid && currentTargetGrid !== bottomGrid)) return;
+    if (!currentTargetGrid || currentTargetGrid !== grid) return;
 
     if (targetPanel && targetPanel !== dragging && !targetPanel.classList.contains('hidden')) {
       const targetRect = targetPanel.getBoundingClientRect();

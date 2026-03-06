@@ -88,7 +88,7 @@ import { classifyWithAI } from '@/services/threat-classifier';
 import { ingestHeadlines } from '@/services/trending-keywords';
 import type { ListFeedDigestResponse } from '@/generated/client/worldmonitor/news/v1/service_client';
 import type { GetSectorSummaryResponse, ListMarketQuotesResponse } from '@/generated/client/worldmonitor/market/v1/service_client';
-import { mountCommunityWidget } from '@/components/CommunityWidget';
+
 import { ResearchServiceClient } from '@/generated/client/worldmonitor/research/v1/service_client';
 import {
   MarketPanel,
@@ -131,6 +131,7 @@ import { getPersistentCache, setPersistentCache } from '@/services/persistent-ca
 import { fetchCachedRiskScores } from '@/services/cached-risk-scores';
 import type { ThreatLevel as ClientThreatLevel } from '@/services/threat-classifier';
 import type { NewsItem as ProtoNewsItem, ThreatLevel as ProtoThreatLevel } from '@/generated/client/worldmonitor/news/v1/service_client';
+import { inferGeoHubsFromTitle } from '@/services/geo-hub-index';
 
 const PROTO_TO_CLIENT_LEVEL: Record<ProtoThreatLevel, ClientThreatLevel> = {
   THREAT_LEVEL_UNSPECIFIED: 'info',
@@ -142,6 +143,26 @@ const PROTO_TO_CLIENT_LEVEL: Record<ProtoThreatLevel, ClientThreatLevel> = {
 
 function protoItemToNewsItem(p: ProtoNewsItem): NewsItem {
   const level = PROTO_TO_CLIENT_LEVEL[p.threat?.level ?? 'THREAT_LEVEL_UNSPECIFIED'];
+
+  // Use server-provided geo if available, otherwise infer from title
+  let lat: number | undefined;
+  let lon: number | undefined;
+  let locationName: string | undefined;
+
+  if (p.location) {
+    lat = p.location.latitude;
+    lon = p.location.longitude;
+    locationName = p.locationName || undefined;
+  } else {
+    const geoMatches = inferGeoHubsFromTitle(p.title);
+    const topGeo = geoMatches[0];
+    if (topGeo) {
+      lat = topGeo.hub.lat;
+      lon = topGeo.hub.lon;
+      locationName = topGeo.hub.name;
+    }
+  }
+
   return {
     source: p.source,
     title: p.title,
@@ -154,8 +175,8 @@ function protoItemToNewsItem(p: ProtoNewsItem): NewsItem {
       confidence: p.threat.confidence,
       source: (p.threat.source || 'keyword') as 'keyword' | 'ml' | 'llm',
     } : undefined,
-    ...(p.locationName && { locationName: p.locationName }),
-    ...(p.location && { lat: p.location.latitude, lon: p.location.longitude }),
+    ...(locationName && { locationName }),
+    ...(lat !== undefined && lon !== undefined && { lat, lon }),
   };
 }
 
@@ -559,6 +580,7 @@ export class DataLoaderManager implements AppModule {
 
   renderNewsForCategory(category: string, items: NewsItem[]): void {
     this.ctx.newsByCategory[category] = items;
+    document.dispatchEvent(new CustomEvent('wm:news-updated'));
     const panel = this.ctx.newsPanels[category];
     if (!panel) return;
     const filteredItems = this.filterItemsByTimeRange(items);
@@ -913,7 +935,7 @@ export class DataLoaderManager implements AppModule {
 
     this.ctx.allNews = collectedNews;
     this.ctx.initialLoadComplete = true;
-    mountCommunityWidget();
+    // mountCommunityWidget();
     updateAndCheck([
       { type: 'news', region: 'global', count: collectedNews.length },
     ]).then(anomalies => {

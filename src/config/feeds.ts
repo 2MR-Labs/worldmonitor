@@ -582,26 +582,7 @@ const FULL_FEEDS: Record<string, Feed[]> = {
     { name: 'Asharq Business', url: rss('https://asharqbusiness.com/rss.xml') },
     { name: 'Asharq News', url: rss('https://asharq.com/snapchat/rss.xml'), lang: 'ar' },
   ],
-  tech: [
-    { name: 'Hacker News', url: rss('https://hnrss.org/frontpage') },
-    { name: 'Ars Technica', url: rss('https://feeds.arstechnica.com/arstechnica/technology-lab') },
-    { name: 'The Verge', url: rss('https://www.theverge.com/rss/index.xml') },
-    { name: 'MIT Tech Review', url: rss('https://www.technologyreview.com/feed/') },
-  ],
-  ai: [
-    { name: 'AI News', url: rss('https://news.google.com/rss/search?q=(OpenAI+OR+Anthropic+OR+Google+AI+OR+"large+language+model"+OR+ChatGPT)+when:2d&hl=en-US&gl=US&ceid=US:en') },
-    { name: 'VentureBeat AI', url: rss('https://venturebeat.com/category/ai/feed/') },
-    { name: 'The Verge AI', url: rss('https://www.theverge.com/rss/ai-artificial-intelligence/index.xml') },
-    { name: 'MIT Tech Review', url: rss('https://www.technologyreview.com/topic/artificial-intelligence/feed') },
-    { name: 'ArXiv AI', url: rss('https://export.arxiv.org/rss/cs.AI') },
-  ],
-  finance: [
-    { name: 'CNBC', url: rss('https://www.cnbc.com/id/100003114/device/rss/rss.html') },
-    { name: 'MarketWatch', url: rss('https://news.google.com/rss/search?q=site:marketwatch.com+markets+when:1d&hl=en-US&gl=US&ceid=US:en') },
-    { name: 'Yahoo Finance', url: rss('https://finance.yahoo.com/news/rssindex') },
-    { name: 'Financial Times', url: rss('https://www.ft.com/rss/home') },
-    { name: 'Reuters Business', url: rss('https://news.google.com/rss/search?q=site:reuters.com+business+markets&hl=en-US&gl=US&ceid=US:en') },
-  ],
+  // tech, ai, finance feeds removed — not relevant to geopolitics/defense focus
   gov: [
     { name: 'White House', url: rss('https://news.google.com/rss/search?q=site:whitehouse.gov&hl=en-US&gl=US&ceid=US:en') },
     { name: 'State Dept', url: rss('https://news.google.com/rss/search?q=site:state.gov+OR+"State+Department"&hl=en-US&gl=US&ceid=US:en') },
@@ -616,11 +597,7 @@ const FULL_FEEDS: Record<string, Feed[]> = {
     { name: 'UN News', url: railwayRss('https://news.un.org/feed/subscribe/en/news/all/rss.xml') },
     { name: 'CISA', url: railwayRss('https://www.cisa.gov/cybersecurity-advisories/all.xml') },
   ],
-  layoffs: [
-    { name: 'Layoffs.fyi', url: rss('https://news.google.com/rss/search?q=tech+company+layoffs+announced&hl=en&gl=US&ceid=US:en') },
-    { name: 'TechCrunch Layoffs', url: rss('https://techcrunch.com/tag/layoffs/feed/') },
-    { name: 'Layoffs News', url: rss('https://news.google.com/rss/search?q=(layoffs+OR+"job+cuts"+OR+"workforce+reduction")+when:3d&hl=en-US&gl=US&ceid=US:en') },
-  ],
+  // layoffs feeds removed — not relevant to geopolitics/defense focus
   thinktanks: [
     { name: 'Foreign Policy', url: rss('https://foreignpolicy.com/feed/') },
     { name: 'Atlantic Council', url: railwayRss('https://www.atlanticcouncil.org/feed/') },
@@ -1099,7 +1076,7 @@ export const SOURCE_REGION_MAP: Record<string, { labelKey: string; feedKeys: str
   africa: { labelKey: 'header.sourceRegionAfrica', feedKeys: ['africa'] },
   latam: { labelKey: 'header.sourceRegionLatAm', feedKeys: ['latam'] },
   asia: { labelKey: 'header.sourceRegionAsiaPacific', feedKeys: ['asia'] },
-  topical: { labelKey: 'header.sourceRegionTopical', feedKeys: ['energy', 'tech', 'ai', 'finance', 'layoffs', 'thinktanks'] },
+  topical: { labelKey: 'header.sourceRegionTopical', feedKeys: ['energy', 'thinktanks'] },
   intel: { labelKey: 'header.sourceRegionIntel', feedKeys: [] },
 
   // Tech variant regions

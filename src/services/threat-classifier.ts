@@ -18,8 +18,8 @@ import { getCSSColor } from '@/utils';
 export const THREAT_COLORS: Record<ThreatLevel, string> = {
   critical: '#ef4444',
   high: '#f97316',
-  medium: '#eab308',
-  low: '#22c55e',
+  medium: '#D4A846',
+  low: '#2ea043',
   info: '#3b82f6',
 };
 

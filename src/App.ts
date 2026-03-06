@@ -258,7 +258,6 @@ export class App {
       findingsBadge: null,
       breakingBanner: null,
       playbackControl: null,
-      exportPanel: null,
       unifiedSettings: null,
       pizzintIndicator: null,
       countryBriefPage: null,
@@ -401,6 +400,24 @@ export class App {
     // Phase 1: Layout (creates map + panels — they'll find hydrated data)
     this.panelLayout.init();
 
+    // Live Feed sidebar (left side)
+    if (!this.state.isMobile) {
+      const mountEl = document.getElementById('liveFeedSidebar');
+      if (mountEl) {
+        const { LiveFeedSidebar } = await import('@/components/LiveFeedSidebar');
+        new LiveFeedSidebar(mountEl, this.state);
+      }
+    }
+
+    // Chat content (right sidebar, chat tab)
+    if (!this.state.isMobile) {
+      const chatMount = document.getElementById('chatContent');
+      if (chatMount) {
+        const { ChatSidebar } = await import('@/components/ChatSidebar');
+        new ChatSidebar(chatMount);
+      }
+    }
+
     const mobileGeoCoords = await geoCoordsPromise;
     if (mobileGeoCoords && this.state.map) {
       this.state.map.setCenter(mobileGeoCoords.lat, mobileGeoCoords.lon, 6);
@@ -437,10 +454,9 @@ export class App {
 
     // Phase 3: UI setup methods
     this.eventHandlers.startHeaderClock();
-    this.eventHandlers.setupPlaybackControl();
+    // this.eventHandlers.setupPlaybackControl();
     this.eventHandlers.setupStatusPanel();
     this.eventHandlers.setupPizzIntIndicator();
-    this.eventHandlers.setupExportPanel();
     this.eventHandlers.setupUnifiedSettings();
 
     // Phase 4: SearchManager, MapLayerHandlers, CountryIntel

@@ -68,7 +68,7 @@ async function executeIntent(intent: Intent): Promise<CommandResult> {
         const rows = summaries.map(s => `
       <div class="cmd-row">
         <strong>${escapeHtml(s.iata)}</strong>
-        <span style="color:${s.severity === 'normal' ? '#22c55e' : s.severity === 'minor' ? '#f59e0b' : '#ef4444'}">${s.severity.toUpperCase()}</span>
+        <span style="color:${s.severity === 'normal' ? '#2ea043' : s.severity === 'minor' ? '#D4A846' : '#ef4444'}">${s.severity.toUpperCase()}</span>
         <span>${s.avgDelayMinutes > 0 ? `+${s.avgDelayMinutes}m delay` : 'Normal ops'}</span>
         ${s.closureStatus ? '<span style="color:#ef4444">CLOSED</span>' : ''}
       </div>`).join('');

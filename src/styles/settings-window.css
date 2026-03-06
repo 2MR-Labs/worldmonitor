@@ -7,12 +7,12 @@
   --settings-border-strong: var(--overlay-heavy);
   --settings-text: #e8eaed;
   --settings-text-secondary: #9aa0a6;
-  --settings-accent: var(--semantic-info);
-  --settings-green: #34d399;
-  --settings-yellow: #fbbf24;
+  --settings-accent: var(--accent);
+  --settings-green: #2ea043;
+  --settings-yellow: #D4A846;
   --settings-red: var(--semantic-critical);
   --settings-blue: #60a5fa;
-  --font-mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Fira Code', 'DejaVu Sans Mono', 'Liberation Mono', monospace;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace;
 
   height: 100vh;
   background: var(--settings-bg);

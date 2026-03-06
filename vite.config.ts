@@ -1,4 +1,4 @@
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { resolve, dirname, extname } from 'path';
 import { mkdir, readFile, writeFile } from 'fs/promises';
@@ -575,6 +575,117 @@ function youtubeLivePlugin(): Plugin {
   };
 }
 
+const CHAT_SYSTEM_PROMPT = `You are Aegis, an AI intelligence analyst embedded in the Aegis Command System — a real-time geopolitical and defense intelligence dashboard. Your role is to provide concise, analytical responses about:
+- Current geopolitical events and conflicts
+- Military movements and strategic posture
+- Threat assessment and risk analysis
+- Infrastructure and supply chain disruptions
+- Regional stability and political developments
+
+Be direct, factual, and analytical. Use intelligence community conventions. Cite regions and actors precisely. Keep responses concise unless the user asks for detail.`;
+
+function chatPlugin(): Plugin {
+  return {
+    name: 'chat-api',
+    configureServer(server) {
+      // loadEnv with '' prefix loads ALL env vars from .env/.env.local, not just VITE_*
+      const env = loadEnv(server.config.mode, server.config.root, '');
+
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url?.startsWith('/api/chat')) return next();
+
+        // CORS headers
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+        if (req.method === 'OPTIONS') {
+          res.statusCode = 204;
+          res.end();
+          return;
+        }
+
+        if (req.method !== 'POST') {
+          res.statusCode = 405;
+          res.end('Method not allowed');
+          return;
+        }
+
+        const apiKey = env.ANTHROPIC_API_KEY;
+        if (!apiKey) {
+          res.statusCode = 503;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'ANTHROPIC_API_KEY not configured — add it to .env.local' }));
+          return;
+        }
+
+        let body: any;
+        try {
+          const chunks: Buffer[] = [];
+          for await (const chunk of req) chunks.push(chunk as Buffer);
+          body = JSON.parse(Buffer.concat(chunks).toString());
+        } catch {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+          return;
+        }
+
+        const messages = (body.messages || []).slice(-20).map((m: any) => ({
+          role: m.role === 'user' ? 'user' : 'assistant',
+          content: typeof m.content === 'string' ? m.content.slice(0, 4000) : '',
+        }));
+
+        if (messages.length === 0) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'No messages provided' }));
+          return;
+        }
+
+        try {
+          const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': apiKey,
+              'anthropic-version': '2023-06-01',
+            },
+            body: JSON.stringify({
+              model: 'claude-sonnet-4-20250514',
+              max_tokens: 1024,
+              system: CHAT_SYSTEM_PROMPT,
+              messages,
+            }),
+          });
+
+          if (!anthropicRes.ok) {
+            const errText = await anthropicRes.text();
+            console.error('[chat] Anthropic API error:', anthropicRes.status, errText);
+            res.statusCode = 502;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: 'AI service error', status: anthropicRes.status }));
+            return;
+          }
+
+          const data = await anthropicRes.json() as any;
+          const text = data.content?.[0]?.text || '';
+
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Cache-Control', 'no-store');
+          res.end(JSON.stringify({ text }));
+        } catch (err: any) {
+          console.error('[chat] Request failed:', err.message);
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: 'Internal server error' }));
+        }
+      });
+    },
+  };
+}
+
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
@@ -584,6 +695,7 @@ export default defineConfig({
     polymarketPlugin(),
     rssProxyPlugin(),
     youtubeLivePlugin(),
+    chatPlugin(),
     sebufApiPlugin(),
     brotliPrecompressPlugin(),
     VitePWA({
