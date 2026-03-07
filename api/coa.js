@@ -1,6 +1,6 @@
 import { getCorsHeaders, isDisallowedOrigin } from './_cors.js';
 
-export const config = { maxDuration: 60 };
+export const config = { runtime: 'edge' };
 
 // System prompt embeds distilled commander_skills knowledge base.
 // Edge Functions cannot read filesystem, so knowledge is baked in.
@@ -52,13 +52,14 @@ Combine Eastern and Western military thought:
 
 ## GUIDELINES
 - Base ALL analysis on the ACTUAL data provided in the situation report
-- Generate 2-3 distinct courses of action with clear tradeoffs
+- Generate exactly 2 courses of action with clear tradeoffs
 - Assess friction realistically based on the intelligence picture
 - Use military DTG format for timestamps
 - Be direct and analytical — avoid speculation without data support
 - All COAs must be non-kinetic analysis/advisory options (OSINT-based recommendations)
 - Consider economic, diplomatic, cyber, and information warfare dimensions
 - Respond in the SAME LANGUAGE as the situation report content (if headlines are in English, respond in English; if mixed, prefer the dominant language)
+- CRITICAL: Keep ALL text fields SHORT (1-2 sentences max). Limit arrays to 2-3 items. Total response must be under 1500 tokens.
 
 ## OUTPUT FORMAT
 Respond ONLY with valid JSON matching this exact structure. Do not include any text outside the JSON:
@@ -172,7 +173,7 @@ export default async function handler(req) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 3000,
+        max_tokens: 2000,
         system: COA_SYSTEM_PROMPT,
         messages: [{
           role: 'user',
