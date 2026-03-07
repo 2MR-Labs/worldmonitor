@@ -1,6 +1,6 @@
 import { getCorsHeaders, isDisallowedOrigin } from './_cors.js';
 
-export const config = { runtime: 'edge' };
+export const config = { maxDuration: 60 };
 
 // System prompt embeds distilled commander_skills knowledge base.
 // Edge Functions cannot read filesystem, so knowledge is baked in.
@@ -172,7 +172,7 @@ export default async function handler(req) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4096,
+        max_tokens: 3000,
         system: COA_SYSTEM_PROMPT,
         messages: [{
           role: 'user',

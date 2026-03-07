@@ -470,13 +470,8 @@ function rssProxyPlugin(): Plugin {
         }
 
         try {
-          const parsed = new URL(feedUrl);
-          if (!RSS_PROXY_ALLOWED_DOMAINS.has(parsed.hostname)) {
-            res.statusCode = 403;
-            res.setHeader('Content-Type', 'application/json');
-            res.end(JSON.stringify({ error: `Domain not allowed: ${parsed.hostname}` }));
-            return;
-          }
+          // Dev mode: skip domain allowlist check — all domains permitted locally.
+          // Production uses api/rss-proxy.js which has its own allowlist.
 
           const controller = new AbortController();
           const timeout = feedUrl.includes('news.google.com') ? 20000 : 12000;
