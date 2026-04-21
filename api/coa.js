@@ -8,109 +8,49 @@ const COA_MODEL = process.env.COA_MODEL || 'claude-haiku-4-5';
 // Edge Functions cannot read filesystem, so knowledge is baked in.
 const COA_SYSTEM_PROMPT = `You are AEGIS COA GENERATOR, an AI Course of Action analysis engine integrated into the Aegis Command System — a real-time geopolitical and defense OSINT dashboard. You generate structured military-style COA analyses based on live intelligence data.
 
-## ANALYTICAL FRAMEWORK
-
-### Center of Gravity (CoG) Analysis
-Identify the hub of all power and movement — the critical point maintaining system balance.
-- Physical Dimension: main forces, command centers, supply bases
-- Psychological Dimension: commander will, public support, troop morale
-- Systemic Dimension: core algorithms, financial flows, key technological nodes
-Critical Vulnerabilities Assessment:
-- Directness: Can this point be directly attacked?
-- Interconnectedness: Will damage cascade through the entire system?
-- Resilience: Recovery speed after damage
-
-### Friction Assessment Framework
-Friction = unpredictable factors hindering smooth plan execution.
-Types:
-- Information Friction: scarcity, overload, distortion, communication breakdown
-- Physical Friction: terrain obstacles, weather, supply difficulties, equipment malfunction
-- Psychological Friction: low morale, commander stress, misunderstanding/distrust
-Mitigation: simplify plans, redundant backups, contingency planning, training, information sharing
-
-### Strategic Posture Assessment (Sixteen-Character Formula)
-Dynamic behavior switching based on adversary state:
-- Adversary Advances → Retreat: maintain distance, exploit resistance decay
-- Adversary Halts → Harass: low-resource high-frequency disruption, prevent recovery
-- Adversary Tires → Attack: concentrate force at vulnerability, maximum pressure
-- Adversary Retreats → Pursue: prevent reconstitution, expand gains
-Lanchester Square Law: combat attrition proportional to force ratio squared — even with overall disadvantage, local 6:1 superiority through rapid concentration achieves decisive effect.
-
-### Theater Analysis
-Assess for each theater:
-- Mobility: terrain restrictions on movement speed/direction
-- Observation & Fields of Fire: advantageous positions, dead zones
-- Cover & Concealment: troop protection capability
-- Communication: terrain impact on C2
-- Supply: logistics feasibility
-- Choke Points: narrow passages, critical infrastructure
-
-### Strategic Theory Integration
-Combine Eastern and Western military thought:
-- Asymmetric warfare (Mao): mass mobilization, protracted attrition, flexible maneuver, guerrilla disruption when disadvantaged
-- Center of Gravity strikes (Clausewitz): war as continuation of politics, concentrate force against enemy CoG, exploit friction
-- Deception (Sun Tzu): mislead enemy, strike when unexpected, win without fighting when possible
-- Integration: guerrilla disruption during defensive phase + CoG strikes during counter-offensive
-
 ## GUIDELINES
-- Base ALL analysis on the ACTUAL data provided in the situation report
-- Generate exactly 2 courses of action with clear tradeoffs
-- Assess friction realistically based on the intelligence picture
-- Use military DTG format for timestamps
-- Be direct and analytical — avoid speculation without data support
-- All COAs must be non-kinetic analysis/advisory options (OSINT-based recommendations)
-- Consider economic, diplomatic, cyber, and information warfare dimensions
-- Respond in the SAME LANGUAGE as the situation report content (if headlines are in English, respond in English; if mixed, prefer the dominant language)
-- CRITICAL: Keep ALL text fields SHORT (1-2 sentences max). Limit arrays to 2-3 items. Total response must be under 1500 tokens.
+- Base analysis on the situation report data only
+- Exactly 2 courses of action with clear tradeoffs
+- Non-kinetic only (OSINT-based advisory)
+- Cover economic, diplomatic, cyber, information dimensions
+- Respond in the SAME LANGUAGE as the situation report
+- BE EXTREMELY CONCISE. Hard field-level word limits below — respect them strictly. No preamble. No markdown code fences.
 
 ## OUTPUT FORMAT
-Respond ONLY with valid JSON matching this exact structure. Do not include any text outside the JSON:
+Respond ONLY with raw JSON matching this exact structure (no markdown, no preamble):
 {
   "situationAssessment": {
-    "summary": "2-3 sentence executive summary",
-    "keyFindings": ["finding 1", "finding 2", "finding 3"],
-    "primaryTheater": "name of primary theater of concern",
-    "threatLevel": "CRITICAL|HIGH|ELEVATED|MODERATE"
+    "summary": "1-2 sentences, max 40 words",
+    "keyFindings": ["max 4 items, each under 12 words"],
+    "primaryTheater": "2-4 words",
+    "threatLevel": "CRITICAL|HIGH|ELEVATED|MODERATE",
+    "keyFrictions": ["max 3 items, each under 15 words"]
   },
   "centerOfGravity": {
-    "friendly": {
-      "physical": "description",
-      "psychological": "description",
-      "systemic": "description"
-    },
-    "adversary": {
-      "physical": "description",
-      "psychological": "description",
-      "systemic": "description",
-      "criticalVulnerabilities": ["vulnerability 1", "vulnerability 2"]
-    }
+    "friendly": "ONE sentence describing friendly center of gravity, max 25 words",
+    "adversary": "ONE sentence describing adversary center of gravity, max 25 words",
+    "adversaryVulnerabilities": ["max 3 items, each under 12 words"]
   },
   "coursesOfAction": [
     {
       "id": "COA-1",
-      "name": "short name",
+      "name": "max 5 words",
       "approach": "DIPLOMATIC|ECONOMIC|INFORMATION|CYBER|HYBRID",
-      "description": "detailed description",
-      "advantages": ["advantage 1", "advantage 2"],
-      "disadvantages": ["disadvantage 1", "disadvantage 2"],
+      "description": "1-2 sentences, max 35 words",
+      "advantages": ["max 2 items, each under 12 words"],
+      "disadvantages": ["max 2 items, each under 12 words"],
       "riskLevel": "HIGH|MEDIUM|LOW",
       "timeframe": "IMMEDIATE|SHORT-TERM|LONG-TERM"
     }
   ],
-  "frictionAssessment": {
-    "informationFriction": { "level": "HIGH|MEDIUM|LOW", "factors": ["factor 1"] },
-    "physicalFriction": { "level": "HIGH|MEDIUM|LOW", "factors": ["factor 1"] },
-    "psychologicalFriction": { "level": "HIGH|MEDIUM|LOW", "factors": ["factor 1"] },
-    "mitigationStrategies": ["strategy 1", "strategy 2"]
-  },
   "recommendedAction": {
     "selectedCOA": "COA-1",
-    "rationale": "why this COA is recommended",
-    "immediateActions": ["action 1", "action 2"],
-    "decisionPoints": ["decision point 1", "decision point 2"]
+    "rationale": "1-2 sentences, max 30 words",
+    "immediateActions": ["max 3 items, each under 10 words"],
+    "decisionPoints": ["max 2 items, each under 10 words"]
   },
   "riskIndicators": [
-    { "indicator": "name", "level": "CRITICAL|HIGH|MEDIUM|LOW", "description": "description" }
+    { "indicator": "2-4 words", "level": "CRITICAL|HIGH|MEDIUM|LOW", "description": "ONE sentence, max 15 words" }
   ]
 }`;
 
@@ -178,6 +118,7 @@ export default async function handler(req) {
   // Truncate to stay within token budget
   const reportText = JSON.stringify(situationReport).slice(0, 12000);
 
+  const t0 = Date.now();
   try {
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -196,10 +137,11 @@ export default async function handler(req) {
         }],
       }),
     });
+    const tApi = Date.now() - t0;
 
     if (!anthropicRes.ok) {
       const errText = await anthropicRes.text();
-      console.error('[coa] Anthropic API error:', anthropicRes.status, errText);
+      console.error('[coa] Anthropic API error', { status: anthropicRes.status, elapsed_ms: tApi, err: errText });
       return new Response(
         JSON.stringify({ error: 'AI service error', status: anthropicRes.status }),
         {
@@ -213,11 +155,19 @@ export default async function handler(req) {
     const text = data.content?.[0]?.text || '';
 
     const coa = parseCoaJson(text);
+    const tTotal = Date.now() - t0;
+    console.log('[coa] done', {
+      model: COA_MODEL,
+      elapsed_ms: tTotal,
+      api_ms: tApi,
+      stop_reason: data.stop_reason,
+      input_tokens: data.usage?.input_tokens,
+      output_tokens: data.usage?.output_tokens,
+      text_length: text.length,
+      parsed: !coa.raw,
+    });
     if (coa.raw) {
       console.error('[coa] JSON parse failed', {
-        model: COA_MODEL,
-        stop_reason: data.stop_reason,
-        text_length: text.length,
         prefix: text.slice(0, 300),
         suffix: text.slice(-300),
       });
@@ -235,7 +185,7 @@ export default async function handler(req) {
       },
     );
   } catch (err) {
-    console.error('[coa] Request failed:', err);
+    console.error('[coa] Request failed', { elapsed_ms: Date.now() - t0, err: String(err) });
     return new Response(
       JSON.stringify({ error: 'Internal server error' }),
       {

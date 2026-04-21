@@ -19,16 +19,13 @@ interface COASituationAssessment {
   keyFindings: string[];
   primaryTheater: string;
   threatLevel: string;
+  keyFrictions?: string[];
 }
 
 interface COACenterOfGravity {
-  friendly: { physical: string; psychological: string; systemic: string };
-  adversary: {
-    physical: string;
-    psychological: string;
-    systemic: string;
-    criticalVulnerabilities: string[];
-  };
+  friendly: string;
+  adversary: string;
+  adversaryVulnerabilities: string[];
 }
 
 interface COACourseOfAction {
@@ -40,13 +37,6 @@ interface COACourseOfAction {
   disadvantages: string[];
   riskLevel: string;
   timeframe: string;
-}
-
-interface COAFrictionAssessment {
-  informationFriction: { level: string; factors: string[] };
-  physicalFriction: { level: string; factors: string[] };
-  psychologicalFriction: { level: string; factors: string[] };
-  mitigationStrategies: string[];
 }
 
 interface COARecommendedAction {
@@ -64,9 +54,8 @@ interface COARiskIndicator {
 
 interface COAResponse {
   situationAssessment: COASituationAssessment;
-  centerOfGravity: COACenterOfGravity;
+  centerOfGravity?: COACenterOfGravity;
   coursesOfAction: COACourseOfAction[];
-  frictionAssessment: COAFrictionAssessment;
   recommendedAction: COARecommendedAction;
   riskIndicators: COARiskIndicator[];
   raw?: string;
@@ -98,20 +87,6 @@ function riskBadgeClass(level: string): string {
   if (l === 'CRITICAL' || l === 'HIGH') return 'coa-risk-high';
   if (l === 'MEDIUM') return 'coa-risk-medium';
   return 'coa-risk-low';
-}
-
-function frictionBarWidth(level: string): string {
-  const l = level.toUpperCase();
-  if (l === 'HIGH') return '100%';
-  if (l === 'MEDIUM') return '60%';
-  return '30%';
-}
-
-function frictionBarClass(level: string): string {
-  const l = level.toUpperCase();
-  if (l === 'HIGH') return 'coa-friction-high';
-  if (l === 'MEDIUM') return 'coa-friction-medium';
-  return 'coa-friction-low';
 }
 
 // ── Component ──
@@ -196,7 +171,6 @@ export class CommandConsole {
 
     const sa = coa.situationAssessment;
     const cog = coa.centerOfGravity;
-    const friction = coa.frictionAssessment;
     const rec = coa.recommendedAction;
 
     let html = `<div class="coa-report">`;
@@ -218,6 +192,12 @@ export class CommandConsole {
             ${sa.primaryTheater ? `<span class="coa-theater-tag">${escapeHtml(sa.primaryTheater)}</span>` : ''}
             <p class="coa-summary">${escapeHtml(sa.summary)}</p>
             ${sa.keyFindings?.length ? `<ul class="coa-findings">${sa.keyFindings.map(f => `<li>${escapeHtml(f)}</li>`).join('')}</ul>` : ''}
+            ${sa.keyFrictions?.length ? `
+              <div class="coa-frictions">
+                <div class="coa-frictions-label">Key Frictions:</div>
+                <ul>${sa.keyFrictions.map(f => `<li>${escapeHtml(f)}</li>`).join('')}</ul>
+              </div>
+            ` : ''}
           </div>
         </div>`;
     }
@@ -226,20 +206,21 @@ export class CommandConsole {
     if (cog) {
       html += `
         <div class="coa-section">
-          <div class="coa-section-title">2. CENTER OF GRAVITY ANALYSIS</div>
+          <div class="coa-section-title">2. CENTER OF GRAVITY</div>
           <div class="coa-cog-grid">
             <div class="coa-cog-card">
               <div class="coa-cog-label">FRIENDLY CoG</div>
-              <div class="coa-cog-row"><span class="coa-cog-dim">Physical:</span> ${escapeHtml(cog.friendly?.physical ?? '—')}</div>
-              <div class="coa-cog-row"><span class="coa-cog-dim">Psychological:</span> ${escapeHtml(cog.friendly?.psychological ?? '—')}</div>
-              <div class="coa-cog-row"><span class="coa-cog-dim">Systemic:</span> ${escapeHtml(cog.friendly?.systemic ?? '—')}</div>
+              <p class="coa-cog-text">${escapeHtml(cog.friendly ?? '—')}</p>
             </div>
             <div class="coa-cog-card">
               <div class="coa-cog-label">ADVERSARY CoG</div>
-              <div class="coa-cog-row"><span class="coa-cog-dim">Physical:</span> ${escapeHtml(cog.adversary?.physical ?? '—')}</div>
-              <div class="coa-cog-row"><span class="coa-cog-dim">Psychological:</span> ${escapeHtml(cog.adversary?.psychological ?? '—')}</div>
-              <div class="coa-cog-row"><span class="coa-cog-dim">Systemic:</span> ${escapeHtml(cog.adversary?.systemic ?? '—')}</div>
-              ${cog.adversary?.criticalVulnerabilities?.length ? `<div class="coa-cog-vulns"><span class="coa-cog-dim">Critical Vulnerabilities:</span><ul>${cog.adversary.criticalVulnerabilities.map(v => `<li>${escapeHtml(v)}</li>`).join('')}</ul></div>` : ''}
+              <p class="coa-cog-text">${escapeHtml(cog.adversary ?? '—')}</p>
+              ${cog.adversaryVulnerabilities?.length ? `
+                <div class="coa-cog-vulns">
+                  <span class="coa-cog-dim">Vulnerabilities:</span>
+                  <ul>${cog.adversaryVulnerabilities.map(v => `<li>${escapeHtml(v)}</li>`).join('')}</ul>
+                </div>
+              ` : ''}
             </div>
           </div>
         </div>`;
@@ -275,30 +256,11 @@ export class CommandConsole {
         </div>`;
     }
 
-    // 4. Friction Assessment
-    if (friction) {
-      html += `
-        <div class="coa-section">
-          <div class="coa-section-title">4. FRICTION ASSESSMENT</div>
-          <div class="coa-friction-list">
-            ${this.renderFrictionBar('Information', friction.informationFriction)}
-            ${this.renderFrictionBar('Physical', friction.physicalFriction)}
-            ${this.renderFrictionBar('Psychological', friction.psychologicalFriction)}
-          </div>
-          ${friction.mitigationStrategies?.length ? `
-            <div class="coa-mitigation">
-              <div class="coa-mitigation-label">Mitigation Strategies:</div>
-              <ul>${friction.mitigationStrategies.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ul>
-            </div>
-          ` : ''}
-        </div>`;
-    }
-
-    // 5. Recommended Action
+    // 4. Recommended Action
     if (rec) {
       html += `
         <div class="coa-section coa-section-recommended">
-          <div class="coa-section-title">5. RECOMMENDED ACTION</div>
+          <div class="coa-section-title">4. RECOMMENDED ACTION</div>
           <div class="coa-rec-selected">${escapeHtml(rec.selectedCOA)}: ${escapeHtml(rec.rationale)}</div>
           ${rec.immediateActions?.length ? `
             <div class="coa-rec-actions">
@@ -315,11 +277,11 @@ export class CommandConsole {
         </div>`;
     }
 
-    // 6. Risk Indicators
+    // 5. Risk Indicators
     if (coa.riskIndicators?.length) {
       html += `
         <div class="coa-section">
-          <div class="coa-section-title">6. RISK INDICATORS</div>
+          <div class="coa-section-title">5. RISK INDICATORS</div>
           <div class="coa-risk-list">
             ${coa.riskIndicators.map(r => `
               <div class="coa-risk-item">
@@ -334,25 +296,14 @@ export class CommandConsole {
     }
 
     html += `</div>`;
+    this.bodyEl.classList.add('has-content');
     this.bodyEl.innerHTML = html;
     this.bodyEl.scrollTop = 0;
   }
 
-  private renderFrictionBar(label: string, data: { level: string; factors: string[] } | undefined): string {
-    if (!data) return '';
-    return `
-      <div class="coa-friction-row">
-        <span class="coa-friction-label">${escapeHtml(label)}</span>
-        <div class="coa-friction-track">
-          <div class="coa-friction-fill ${frictionBarClass(data.level)}" style="width: ${frictionBarWidth(data.level)}"></div>
-        </div>
-        <span class="coa-friction-level">${escapeHtml(data.level)}</span>
-      </div>
-      ${data.factors?.length ? `<div class="coa-friction-factors">${data.factors.map(f => escapeHtml(f)).join(' · ')}</div>` : ''}`;
-  }
-
   private renderRawCOA(text: string): void {
     if (!this.bodyEl) return;
+    this.bodyEl.classList.add('has-content');
     this.bodyEl.innerHTML = `
       <div class="coa-report">
         <div class="coa-header">

@@ -1383,6 +1383,12 @@ canvas,
   overflow-y: auto;
 }
 
+.command-console-body.has-content {
+  display: block;
+  align-items: initial;
+  justify-content: initial;
+}
+
 .command-console-coa-btn.loading {
   opacity: 0.5;
   pointer-events: none;
@@ -1575,6 +1581,40 @@ canvas,
 .coa-cog-vulns ul {
   padding-left: 14px;
   margin: 2px 0 0;
+}
+
+.coa-cog-text {
+  font-size: 11px;
+  margin: 0 0 6px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.coa-frictions {
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-size: 11px;
+}
+
+.coa-frictions-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--semantic-high);
+  margin-bottom: 4px;
+}
+
+.coa-frictions ul {
+  padding-left: 14px;
+  margin: 0;
+}
+
+.coa-frictions li {
+  margin-bottom: 2px;
+  color: var(--text-secondary);
 }
 
 .coa-cog-vulns li {
