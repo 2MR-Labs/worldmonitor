@@ -112,6 +112,21 @@ Respond ONLY with valid JSON matching this exact structure. Do not include any t
   ]
 }`;
 
+function parseCoaJson(text) {
+  const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlock) {
+    try { return JSON.parse(codeBlock[1].trim()); } catch {}
+  }
+  try { return JSON.parse(text.trim()); } catch {}
+  const first = text.indexOf('{');
+  const last = text.lastIndexOf('}');
+  if (first !== -1 && last > first) {
+    try { return JSON.parse(text.slice(first, last + 1)); } catch {}
+  }
+  console.error('[coa] JSON parse failed; raw text prefix:', text.slice(0, 500));
+  return { raw: text };
+}
+
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
@@ -172,8 +187,10 @@ export default async function handler(req) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
+        model: 'claude-sonnet-4-6',
+        max_tokens: 4000,
+        thinking: { type: 'disabled' },
+        output_config: { effort: 'low' },
         system: COA_SYSTEM_PROMPT,
         messages: [{
           role: 'user',
@@ -197,16 +214,7 @@ export default async function handler(req) {
     const data = await anthropicRes.json();
     const text = data.content?.[0]?.text || '';
 
-    // Attempt to parse structured JSON response
-    let coa;
-    try {
-      // Handle case where Claude wraps JSON in markdown code blocks
-      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, text];
-      coa = JSON.parse(jsonMatch[1].trim());
-    } catch {
-      // Fallback: return raw text
-      coa = { raw: text };
-    }
+    const coa = parseCoaJson(text);
 
     return new Response(
       JSON.stringify({ coa, generatedAt: new Date().toISOString() }),

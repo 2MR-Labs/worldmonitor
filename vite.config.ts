@@ -647,7 +647,7 @@ function chatPlugin(): Plugin {
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: 'claude-sonnet-4-20250514',
+              model: 'claude-sonnet-4-6',
               max_tokens: 1024,
               system: CHAT_SYSTEM_PROMPT,
               messages,
@@ -791,6 +791,21 @@ Respond ONLY with valid JSON matching this exact structure. Do not include any t
   ]
 }`;
 
+function parseCoaJson(text: string): any {
+  const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (codeBlock) {
+    try { return JSON.parse(codeBlock[1].trim()); } catch {}
+  }
+  try { return JSON.parse(text.trim()); } catch {}
+  const first = text.indexOf('{');
+  const last = text.lastIndexOf('}');
+  if (first !== -1 && last > first) {
+    try { return JSON.parse(text.slice(first, last + 1)); } catch {}
+  }
+  console.error('[coa] JSON parse failed; raw text prefix:', text.slice(0, 500));
+  return { raw: text };
+}
+
 function coaPlugin(): Plugin {
   return {
     name: 'coa-api',
@@ -855,8 +870,10 @@ function coaPlugin(): Plugin {
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: 'claude-sonnet-4-20250514',
+              model: 'claude-sonnet-4-6',
               max_tokens: 4096,
+              thinking: { type: 'disabled' },
+              output_config: { effort: 'low' },
               system: COA_SYSTEM_PROMPT,
               messages: [{
                 role: 'user',
@@ -877,13 +894,7 @@ function coaPlugin(): Plugin {
           const data = await anthropicRes.json() as any;
           const text = data.content?.[0]?.text || '';
 
-          let coa;
-          try {
-            const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, text];
-            coa = JSON.parse(jsonMatch[1].trim());
-          } catch {
-            coa = { raw: text };
-          }
+          const coa = parseCoaJson(text);
 
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
