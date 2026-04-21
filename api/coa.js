@@ -2,6 +2,8 @@ import { getCorsHeaders, isDisallowedOrigin } from './_cors.js';
 
 export const config = { runtime: 'edge' };
 
+const COA_MODEL = process.env.COA_MODEL || 'claude-haiku-4-5';
+
 // System prompt embeds distilled commander_skills knowledge base.
 // Edge Functions cannot read filesystem, so knowledge is baked in.
 const COA_SYSTEM_PROMPT = `You are AEGIS COA GENERATOR, an AI Course of Action analysis engine integrated into the Aegis Command System — a real-time geopolitical and defense OSINT dashboard. You generate structured military-style COA analyses based on live intelligence data.
@@ -113,17 +115,15 @@ Respond ONLY with valid JSON matching this exact structure. Do not include any t
 }`;
 
 function parseCoaJson(text) {
-  const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (codeBlock) {
-    try { return JSON.parse(codeBlock[1].trim()); } catch {}
-  }
-  try { return JSON.parse(text.trim()); } catch {}
-  const first = text.indexOf('{');
-  const last = text.lastIndexOf('}');
+  let cleaned = text.trim()
+    .replace(/^```(?:json)?\s*\n?/, '')
+    .replace(/\n?```\s*$/, '');
+  try { return JSON.parse(cleaned); } catch {}
+  const first = cleaned.indexOf('{');
+  const last = cleaned.lastIndexOf('}');
   if (first !== -1 && last > first) {
-    try { return JSON.parse(text.slice(first, last + 1)); } catch {}
+    try { return JSON.parse(cleaned.slice(first, last + 1)); } catch {}
   }
-  console.error('[coa] JSON parse failed; raw text prefix:', text.slice(0, 500));
   return { raw: text };
 }
 
@@ -187,10 +187,8 @@ export default async function handler(req) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 4000,
-        thinking: { type: 'disabled' },
-        output_config: { effort: 'low' },
+        model: COA_MODEL,
+        max_tokens: 8000,
         system: COA_SYSTEM_PROMPT,
         messages: [{
           role: 'user',
@@ -215,6 +213,15 @@ export default async function handler(req) {
     const text = data.content?.[0]?.text || '';
 
     const coa = parseCoaJson(text);
+    if (coa.raw) {
+      console.error('[coa] JSON parse failed', {
+        model: COA_MODEL,
+        stop_reason: data.stop_reason,
+        text_length: text.length,
+        prefix: text.slice(0, 300),
+        suffix: text.slice(-300),
+      });
+    }
 
     return new Response(
       JSON.stringify({ coa, generatedAt: new Date().toISOString() }),

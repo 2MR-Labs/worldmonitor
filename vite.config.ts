@@ -647,7 +647,7 @@ function chatPlugin(): Plugin {
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: 'claude-sonnet-4-6',
+              model: env.CHAT_MODEL || 'claude-sonnet-4-6',
               max_tokens: 1024,
               system: CHAT_SYSTEM_PROMPT,
               messages,
@@ -792,17 +792,15 @@ Respond ONLY with valid JSON matching this exact structure. Do not include any t
 }`;
 
 function parseCoaJson(text: string): any {
-  const codeBlock = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (codeBlock) {
-    try { return JSON.parse(codeBlock[1].trim()); } catch {}
-  }
-  try { return JSON.parse(text.trim()); } catch {}
-  const first = text.indexOf('{');
-  const last = text.lastIndexOf('}');
+  let cleaned = text.trim()
+    .replace(/^```(?:json)?\s*\n?/, '')
+    .replace(/\n?```\s*$/, '');
+  try { return JSON.parse(cleaned); } catch {}
+  const first = cleaned.indexOf('{');
+  const last = cleaned.lastIndexOf('}');
   if (first !== -1 && last > first) {
-    try { return JSON.parse(text.slice(first, last + 1)); } catch {}
+    try { return JSON.parse(cleaned.slice(first, last + 1)); } catch {}
   }
-  console.error('[coa] JSON parse failed; raw text prefix:', text.slice(0, 500));
   return { raw: text };
 }
 
@@ -870,10 +868,8 @@ function coaPlugin(): Plugin {
               'anthropic-version': '2023-06-01',
             },
             body: JSON.stringify({
-              model: 'claude-sonnet-4-6',
-              max_tokens: 4096,
-              thinking: { type: 'disabled' },
-              output_config: { effort: 'low' },
+              model: env.COA_MODEL || 'claude-haiku-4-5',
+              max_tokens: 8000,
               system: COA_SYSTEM_PROMPT,
               messages: [{
                 role: 'user',
@@ -895,6 +891,14 @@ function coaPlugin(): Plugin {
           const text = data.content?.[0]?.text || '';
 
           const coa = parseCoaJson(text);
+          if (coa.raw) {
+            console.error('[coa] JSON parse failed', {
+              stop_reason: data.stop_reason,
+              text_length: text.length,
+              prefix: text.slice(0, 300),
+              suffix: text.slice(-300),
+            });
+          }
 
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');

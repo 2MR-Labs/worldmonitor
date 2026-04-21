@@ -2,6 +2,8 @@ import { getCorsHeaders, isDisallowedOrigin } from './_cors.js';
 
 export const config = { runtime: 'edge' };
 
+const CHAT_MODEL = process.env.CHAT_MODEL || 'claude-sonnet-4-6';
+
 const SYSTEM_PROMPT = `You are Aegis, an AI intelligence analyst embedded in the Aegis Command System — a real-time geopolitical and defense intelligence dashboard. Your role is to provide concise, analytical responses about:
 - Current geopolitical events and conflicts
 - Military movements and strategic posture
@@ -72,7 +74,7 @@ export default async function handler(req) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: CHAT_MODEL,
         max_tokens: 1024,
         system: SYSTEM_PROMPT,
         messages,
